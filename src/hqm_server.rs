@@ -1,13 +1,12 @@
 use std::net::SocketAddr;
 
 use nalgebra::{Matrix3, Point3, Rotation3, Vector2, Vector3};
-
 use std::cmp::min;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use crate::hqm_game::{
     HQMGame, HQMGameObject, HQMGameState, HQMGameWorld, HQMIcingStatus, HQMMessage,
-    HQMOffsideStatus, HQMPlayerInput, HQMRulesState, HQMSkaterHand, HQMTeam,
+    HQMOffsideStatus, HQMPlayerInput, HQMRulesState, HQMSkaterHand, HQMTeam, RHQMPlayer,
 };
 use crate::hqm_parse::{HQMMessageReader, HQMMessageWriter, HQMObjectPacket};
 use crate::hqm_simulate::HQMSimulationEvent;
@@ -42,10 +41,12 @@ pub(crate) struct HQMServer {
     pub(crate) players: Vec<Option<HQMConnectedPlayer>>,
     pub(crate) ban_list: HashSet<std::net::IpAddr>,
     pub(crate) allow_join: bool,
+    pub(crate) allow_ranked_join: bool,
     pub(crate) config: HQMServerConfiguration,
     pub(crate) game: HQMGame,
     game_alloc: u32,
     pub(crate) is_muted: bool,
+    pub(crate) last_sec: u64,
 }
 
 impl HQMServer {
@@ -222,11 +223,6 @@ impl HQMServer {
             return;
         }
 
-        // Disabled join
-        if !self.allow_join {
-            return;
-        }
-
         let player_name_bytes = parser.read_bytes_aligned(32);
         let player_name = get_player_name(player_name_bytes);
         match player_name {
@@ -304,13 +300,6 @@ impl HQMServer {
             }
             "unmutechat" => {
                 self.unmute_chat(player_index);
-            }
-            "fs" => {
-                if let Ok(force_player_index) = arg.parse::<usize>() {
-                    if force_player_index < self.players.len() {
-                        self.force_player_off_ice(player_index, force_player_index);
-                    }
-                }
             }
             "kick" => {
                 if let Ok(kick_player_index) = arg.parse::<usize>() {
@@ -904,6 +893,27 @@ impl HQMServer {
                 self.add_global_message(update, true);
 
                 self.players[player_index as usize] = None;
+
+                let mut logged_index = 0;
+                let mut logged_selected = 999;
+                for i in self.game.logged_players.iter() {
+                    let pl = &Rc::as_ref(i);
+                    match pl {
+                        RHQMPlayer::Player {
+                            player_i,
+                            player_name: _,
+                        } => {
+                            if player_i == &player_index {
+                                logged_selected = logged_index;
+                            }
+                        }
+                    }
+                    logged_index += 1;
+                }
+
+                if logged_selected != 999 {
+                    self.game.logged_players.remove(logged_selected);
+                }
             }
             None => {}
         }
@@ -1047,17 +1057,33 @@ impl HQMServer {
                 let change = match skater_object {
                     Some(skater_object) => {
                         if player.input.spectate() {
-                            let team_player_count = match skater_object.team {
-                                HQMTeam::Red => &mut red_player_count,
-                                HQMTeam::Blue => &mut blue_player_count,
-                            };
-                            let res =
-                                set_team_internal(player_index, player, world, &self.config, None);
-                            if res.is_some() {
-                                *team_player_count -= 1;
-                                player.team_switch_timer = 500;
+                            if self.game.ranked_started == false {
+                                let team_player_count = match skater_object.team {
+                                    HQMTeam::Red => &mut red_player_count,
+                                    HQMTeam::Blue => &mut blue_player_count,
+                                };
+
+                                if !self.game.ranked_started {
+                                    let res = set_team_internal(
+                                        player_index,
+                                        player,
+                                        world,
+                                        &self.config,
+                                        None,
+                                    );
+
+                                    if res.is_some() {
+                                        *team_player_count -= 1;
+                                        player.team_switch_timer = 500;
+                                    }
+                                    res
+                                } else {
+                                    None
+                                }
+                            } else {
+                                skater_object.input = player.input.clone();
+                                None
                             }
-                            res
                         } else {
                             skater_object.input = player.input.clone();
                             None
@@ -1117,6 +1143,64 @@ impl HQMServer {
 
     async fn tick(&mut self, socket: &UdpSocket) {
         if self.player_count() != 0 {
+            if self.game.ranked_started == false {
+                let now = SystemTime::now();
+                let since_the_epoch = now.duration_since(UNIX_EPOCH).expect("Time went backwards");
+                let secs = since_the_epoch.as_secs();
+                if secs % 20 == 0 {
+                    if secs != self.last_sec {
+                        self.last_sec = secs;
+                        let mut joined = String::from("");
+                        for i in self.game.logged_players.iter() {
+                            let pl = &Rc::as_ref(i);
+                            match pl {
+                                RHQMPlayer::Player {
+                                    player_i: _,
+                                    player_name,
+                                } => {
+                                    let val;
+                                    if player_name.len() > 2 {
+                                        val = &player_name[0..3];
+                                    } else {
+                                        val = &player_name;
+                                    }
+
+                                    if joined.len() != 0 {
+                                        joined = format!("{}{}{}", joined, String::from(", "), val);
+                                    } else {
+                                        joined = val.to_string();
+                                    }
+                                }
+                            }
+                        }
+
+                        self.add_server_chat_message(format!(
+                            "Type /l <password> or /login <password> to join ranked game"
+                        ));
+                        self.add_server_chat_message(format!("Sign up on https://rhqm.site"));
+
+                        if self.game.logged_players.len() > 0 {
+                            self.add_server_chat_message(format!(
+                                "Logged in {}/{} ({})",
+                                self.game.logged_players.len().to_string(),
+                                self.game.ranked_count,
+                                joined
+                            ));
+                        } else {
+                            self.add_server_chat_message(format!(
+                                "Logged in {}/{}",
+                                self.game.logged_players.len().to_string(),
+                                self.game.ranked_count,
+                            ));
+                        }
+                    }
+                }
+            } else {
+                if self.game.game_over {
+                    self.save_data();
+                }
+            }
+
             self.game.active = true;
             let packets = tokio::task::block_in_place(|| {
                 self.update_players_and_input();
@@ -1457,6 +1541,7 @@ impl HQMServer {
             self.add_global_message(message, true);
         }
 
+        self.allow_ranked_join = true;
         self.game.time = self.config.time_warmup * 100;
     }
 
@@ -1775,6 +1860,8 @@ impl HQMServer {
             game_alloc: 1,
             is_muted: false,
             config,
+            last_sec: 3,
+            allow_ranked_join: true,
         }
     }
 }
@@ -2188,6 +2275,7 @@ fn set_team_internal(
                         (pos, rot)
                     }
                 };
+
                 if let Some(i) = world.create_player_object(
                     team,
                     pos,

@@ -1,0 +1,169 @@
+[2mApr 12 09:57:42.000[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 09:57:42.004[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 09:57:46.392[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:58717
+[2mApr 12 09:57:47.241[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 09:57:57.900[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:50000
+[2mApr 12 10:29:02.813[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 10:29:02.818[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 10:29:09.835[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:58034
+[2mApr 12 10:29:15.943[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) joined server from address 192.168.142.136:52560
+[2mApr 12 10:31:26.428[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 10:31:26.431[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 10:31:31.255[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:62732
+[2mApr 12 10:31:38.080[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) joined server from address 192.168.142.136:62738
+[2mApr 12 10:32:32.956[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 10:32:32.960[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 10:32:42.929[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:50873
+[2mApr 12 10:32:48.699[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:50871
+[2mApr 12 10:38:38.303[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 10:38:38.306[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 10:38:40.247[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:65009
+[2mApr 12 10:38:44.387[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:55340
+[2mApr 12 10:59:43.165[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 10:59:43.168[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 10:59:44.829[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:64497
+[2mApr 12 10:59:52.174[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:51153
+[2mApr 12 10:59:58.297[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 11:07:43.812[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 11:07:43.815[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 11:07:45.207[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:57619
+[2mApr 12 11:07:45.855[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 11:13:49.101[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 11:13:49.104[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 11:13:50.905[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:58083
+[2mApr 12 11:13:54.624[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 11:14:46.746[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 11:14:46.749[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 11:14:50.475[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:60834
+[2mApr 12 11:14:51.738[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 11:31:33.702[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 11:31:33.705[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 11:31:35.916[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:59880
+[2mApr 12 11:31:38.903[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 11:31:44.957[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:60836
+[2mApr 12 11:31:47.910[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 11:32:48.028[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 11:32:48.031[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 11:32:49.502[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:54106
+[2mApr 12 11:32:50.360[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 11:32:55.538[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:54108
+[2mApr 12 11:32:58.044[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Blue
+[2mApr 12 11:33:24.326[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 11:33:24.331[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 11:33:27.183[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:51633
+[2mApr 12 11:33:31.486[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) joined server from address 192.168.142.136:51634
+[2mApr 12 11:33:36.651[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) has joined team Blue
+[2mApr 12 11:33:36.651[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) has joined team Blue
+[2mApr 12 11:42:27.473[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 11:42:27.476[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 11:42:29.827[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:57327
+[2mApr 12 11:42:33.142[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:50721
+[2mApr 12 11:42:40.134[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 11:42:40.134[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Blue
+[2mApr 12 11:46:53.093[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) exited server
+[2mApr 12 11:46:54.189[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) exited server
+[2mApr 12 11:46:54.195[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 1 abandoned
+[2mApr 12 11:46:54.195[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 2 started
+[2mApr 12 11:46:56.239[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:59999
+[2mApr 12 11:47:02.346[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) joined server from address 192.168.142.136:60002
+[2mApr 12 11:47:04.417[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) has joined team Red
+[2mApr 12 11:47:04.417[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) has joined team Blue
+[2mApr 12 11:51:58.863[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) exited server
+[2mApr 12 11:52:00.543[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) exited server
+[2mApr 12 11:52:00.547[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 2 abandoned
+[2mApr 12 11:52:00.547[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 3 started
+[2mApr 12 11:52:02.019[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:53608
+[2mApr 12 11:52:10.175[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) exited server
+[2mApr 12 11:52:10.185[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 3 abandoned
+[2mApr 12 11:52:10.186[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 4 started
+[2mApr 12 11:52:11.467[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:53609
+[2mApr 12 11:52:17.419[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) joined server from address 192.168.142.136:60948
+[2mApr 12 11:52:20.324[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) has joined team Red
+[2mApr 12 11:52:20.325[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) has joined team Blue
+[2mApr 12 11:52:22.047[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) exited server
+[2mApr 12 11:52:30.871[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) exited server
+[2mApr 12 11:52:30.877[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 4 abandoned
+[2mApr 12 11:52:30.877[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 5 started
+[2mApr 12 11:52:32.516[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:55616
+[2mApr 12 11:52:38.763[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) joined server from address 192.168.142.136:55615
+[2mApr 12 11:52:41.071[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) exited server
+[2mApr 12 11:52:44.385[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) has joined team Red
+[2mApr 12 11:53:12.107[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:53508
+[2mApr 12 11:53:13.736[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) has joined team Red
+[2mApr 12 11:53:25.119[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) exited server
+[2mApr 12 12:19:36.688[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 12:19:36.692[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 12:19:41.851[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:58534
+[2mApr 12 12:19:43.290[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 12:19:45.631[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:58535
+[2mApr 12 12:19:47.359[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 12:19:47.359[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 12:20:00.521[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) exited server
+[2mApr 12 12:20:01.392[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) exited server
+[2mApr 12 12:20:01.400[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 1 abandoned
+[2mApr 12 12:20:01.400[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 2 started
+[2mApr 12 12:20:03.293[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:49912
+[2mApr 12 12:20:05.864[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 12:20:11.363[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:49914
+[2mApr 12 12:20:13.031[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 12:20:13.031[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 12:20:14.793[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) exited server
+[2mApr 12 12:20:15.591[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) exited server
+[2mApr 12 12:20:15.600[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 2 abandoned
+[2mApr 12 12:20:15.601[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 3 started
+[2mApr 12 12:20:17.342[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:49915
+[2mApr 12 12:20:23.807[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:49918
+[2mApr 12 12:20:25.821[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Red
+[2mApr 12 12:20:25.821[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 12:20:45.633[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) exited server
+[2mApr 12 12:20:46.986[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) exited server
+[2mApr 12 12:20:46.990[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 3 abandoned
+[2mApr 12 12:20:46.990[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 4 started
+[2mApr 12 12:20:51.859[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:55593
+[2mApr 12 12:20:55.692[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) joined server from address 192.168.142.136:55595
+[2mApr 12 12:20:57.440[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) has joined team Red
+[2mApr 12 12:20:57.440[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) has joined team Blue
+[2mApr 12 12:21:09.882[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: 7OnOff (0) is now admin
+[2mApr 12 12:21:14.780[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: 7OnOff (0) set period to 3
+[2mApr 12 12:22:52.856[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 12:22:52.859[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 12:22:54.223[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:62844
+[2mApr 12 12:22:56.586[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) joined server from address 192.168.142.136:62843
+[2mApr 12 12:23:01.718[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) has joined team Red
+[2mApr 12 12:23:01.718[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) has joined team Red
+[2mApr 12 12:23:03.257[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) exited server
+[2mApr 12 12:23:04.018[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) exited server
+[2mApr 12 12:23:04.027[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 1 abandoned
+[2mApr 12 12:23:04.028[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 2 started
+[2mApr 12 12:23:05.970[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:64661
+[2mApr 12 12:23:08.372[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:64664
+[2mApr 12 12:23:12.718[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 12:23:12.718[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Blue
+[2mApr 12 12:23:24.508[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: test (0) is now admin
+[2mApr 12 12:24:02.088[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: test (0) set period to 3
+[2mApr 12 12:24:08.768[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: Clock set to 0:5 by test (0)
+[2mApr 12 12:26:01.365[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 12:26:01.368[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 12:26:03.512[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:63247
+[2mApr 12 12:26:06.885[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:57741
+[2mApr 12 12:26:11.630[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 12:26:11.631[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Blue
+[2mApr 12 12:26:18.568[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: test (0) tried to become admin, entered wrong password
+[2mApr 12 12:26:30.238[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: test (0) is now admin
+[2mApr 12 12:27:23.718[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: test (0) set period to 3
+[2mApr 12 12:27:27.740[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: Clock set to 0:1 by test (0)
+[2mApr 12 12:29:33.049[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 12 12:29:33.052[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 12 12:29:52.398[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:62623
+[2mApr 12 12:29:59.159[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:49554
+[2mApr 12 12:30:00.671[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 12:30:04.282[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 12 12:30:04.282[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Blue
+[2mApr 12 12:30:09.021[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: test (0) is now admin
+[2mApr 12 12:30:12.211[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: test (0) set period to 3
+[2mApr 12 12:30:18.193[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: test (0) changed blue score to 1
+[2mApr 12 12:36:09.497[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 2 started
+[2mApr 12 12:36:09.502[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) timed out
+[2mApr 12 12:36:09.503[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) timed out
+[2mApr 12 12:36:09.503[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 2 abandoned
+[2mApr 12 12:36:09.503[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 3 started

@@ -1,12 +1,15 @@
 extern crate crypto;
 
 use crate::hqm_admin_commands::crypto::digest::Digest;
-use crate::hqm_game::{HQMGameObject, HQMGameState, HQMMessage, HQMTeam, RHQMPlayer};
+use crate::hqm_game::{
+    HQMGameObject, HQMGameState, HQMMessage, HQMTeam, RHQMGamePlayer, RHQMPlayer,
+};
 use crate::hqm_server::{
     HQMIcingConfiguration, HQMMuteStatus, HQMOffsideConfiguration, HQMServer, HQMServerMode,
 };
 use crypto::md5::Md5;
 use postgres::{Connection, SslMode};
+use std::io;
 use std::net::SocketAddr;
 use std::rc::Rc;
 use tracing::info;
@@ -167,51 +170,33 @@ impl HQMServer {
         }
     }
 
-    pub(crate) fn force_player_off_ice(
-        &mut self,
-        admin_player_index: usize,
-        force_player_index: usize,
-    ) {
-        if let Some(player) = &self.players[admin_player_index] {
-            if player.is_admin {
-                let admin_player_name = player.player_name.clone();
+    pub(crate) fn force_players_off_ice_by_system(&mut self) {
+        let mut i = 0;
+        while i < self.players.len() {
+            self.force_player_off_ice(i);
+            i = i + 1;
+        }
+    }
 
-                if force_player_index < self.players.len() {
-                    if let Some(force_player) = &mut self.players[force_player_index] {
-                        force_player.team_switch_timer = 500; // 500 ticks, 5 seconds
-                        if let Some(i) = force_player.skater {
-                            self.game.world.objects[i] = HQMGameObject::None;
-                            force_player.skater = None;
-                            let force_player_name = force_player.player_name.clone();
-                            let msg = format!(
-                                "{} forced off ice by {}",
-                                force_player_name, admin_player_name
-                            );
-                            info!(
-                                "{} ({}) forced {} ({}) off ice",
-                                admin_player_name,
-                                admin_player_index,
-                                force_player.player_name,
-                                force_player_index
-                            );
+    pub(crate) fn force_player_off_ice(&mut self, force_player_index: usize) {
+        if force_player_index < self.players.len() {
+            if let Some(force_player) = &mut self.players[force_player_index] {
+                force_player.team_switch_timer = 500; // 500 ticks, 5 seconds
+                if let Some(i) = force_player.skater {
+                    self.game.world.objects[i] = HQMGameObject::None;
+                    force_player.skater = None;
+                    let force_player_name = force_player.player_name.clone();
 
-                            self.add_global_message(
-                                HQMMessage::PlayerUpdate {
-                                    player_name: force_player_name,
-                                    object: None,
-                                    player_index: force_player_index as usize,
-                                    in_server: true,
-                                },
-                                true,
-                            );
-
-                            self.add_server_chat_message(msg);
-                        }
-                    }
+                    self.add_global_message(
+                        HQMMessage::PlayerUpdate {
+                            player_name: force_player_name,
+                            object: None,
+                            player_index: force_player_index as usize,
+                            in_server: true,
+                        },
+                        true,
+                    );
                 }
-            } else {
-                self.admin_deny_message(admin_player_index);
-                return;
             }
         }
     }
@@ -888,16 +873,130 @@ impl HQMServer {
         }
     }
 
-    pub(crate) fn login(&mut self, player_i: usize, password_user: &str) {
+    pub(crate) fn user_logged_in(&mut self, user: &str) {
+        let msg = format!(
+            "{} logged in [{}/{}]",
+            user,
+            self.game.logged_players.len().to_string(),
+            self.game.ranked_count
+        );
+
+        self.add_server_chat_message(msg);
+
+        if self.game.logged_players.len().to_string() == self.game.ranked_count.to_string() {
+            self.game.ranked_started = true;
+            self.force_players_off_ice_by_system();
+            self.game.time = 2000;
+            self.game.paused = false;
+
+            let sum = self.randomize_players();
+            self.set_teams_by_server(sum);
+        }
+    }
+
+    pub(crate) fn set_teams_by_server(&mut self, sum: i64) {
+        let mut sum_red = 0;
+        let mut sum_blue = 0;
+        let half_sum = sum / 2;
+        let mut red_team: Vec<usize> = vec![];
+        let mut blue_team: Vec<usize> = vec![];
+        for i in self.game.game_players.iter() {
+            let pl = &Rc::as_ref(i);
+            match pl {
+                RHQMGamePlayer::Player {
+                    player_i_r,
+                    player_name_r,
+                    player_points,
+                    player_team,
+                    goals,
+                    assists,
+                } => {
+                    if sum_red <= sum_blue || sum_blue >= half_sum {
+                        red_team.push(player_i_r.to_owned());
+                        sum_red = sum_red + player_points;
+                    } else {
+                        blue_team.push(player_i_r.to_owned());
+                        sum_blue = sum_blue + player_points;
+                    }
+                }
+            }
+        }
+
+        for i in red_team.iter() {
+            self.set_team(i.to_owned(), Some(HQMTeam::Red));
+        }
+
+        for i in blue_team.iter() {
+            self.set_team(i.to_owned(), Some(HQMTeam::Blue));
+        }
+
+        let msg2 = format!("{} {}", sum_red, sum_blue);
+        self.add_server_chat_message(msg2);
+    }
+
+    pub(crate) fn randomize_players(&mut self) -> i64 {
+        self.add_server_chat_message(String::from("Ranked game starting"));
+        let mut sum = 0;
+
+        for i in self.game.logged_players.iter() {
+            let pl = &Rc::as_ref(i);
+            match pl {
+                RHQMPlayer::Player {
+                    player_i,
+                    player_name,
+                } => {
+                    let points = Self::get_player_points(player_name);
+                    let player_item = RHQMGamePlayer::Player {
+                        player_i_r: player_i.to_owned(),
+                        player_name_r: player_name.to_string(),
+                        player_points: points,
+                        player_team: 0,
+                        goals: 0,
+                        assists: 0,
+                    };
+                    let rc = Rc::new(player_item);
+
+                    sum = sum + points;
+
+                    self.game.game_players.push(rc.clone());
+                }
+            }
+        }
+
+        return sum;
+    }
+
+    pub fn get_player_points(login: &str) -> i64 {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+        let mut score: i64 = 0;
+        let str_sql = format!(
+            "select COALESCE(sum(\"Score\"),0) from public.\"GameStats\" where \"GameId\" in (select \"Id\" from public.\"Stats\" where \"Season\"=(select max(\"Season\") from public.\"Stats\"))
+            and \"Player\" = (select \"Id\" from public.\"Users\" where \"Login\"='{}')",
+            login
+        );
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            score = row.get(0);
+        }
+
+        return score;
+    }
+
+    pub(crate) fn login(&mut self, player_index: usize, password_user: &str) {
         let mut logged = false;
         for i in self.game.logged_players.iter() {
             let pl = &Rc::as_ref(i);
             match pl {
                 RHQMPlayer::Player {
-                    player_index,
-                    player_name,
+                    player_i,
+                    player_name: _,
                 } => {
-                    if player_index == &player_i {
+                    if player_i == &player_index {
                         logged = true;
                     }
                 }
@@ -905,7 +1004,7 @@ impl HQMServer {
         }
 
         if logged == false {
-            if let Some(player) = &self.players[player_i] {
+            if let Some(player) = &self.players[player_index] {
                 let conn = Connection::connect(
                     "postgresql://test:test@89.223.89.237:5432/rhqm",
                     &SslMode::None,
@@ -932,25 +1031,76 @@ impl HQMServer {
                 let str_t = &str_sql;
                 let stmt = conn.prepare(str_t).unwrap();
 
+                let mut name = String::from("");
+
                 for row in stmt.query(&[]).unwrap() {
                     let count: i64 = row.get(0);
                     if count > 0 {
-                        let name = &player.player_name;
-                        // self.add_server_chat_message(String::from("test"));
                         let player_item = RHQMPlayer::Player {
-                            player_index: player_i,
-                            player_name: name.to_string(),
+                            player_i: player_index,
+                            player_name: player.player_name.to_string(),
                         };
                         let rc = Rc::new(player_item);
+
+                        name = player.player_name.to_string();
+
                         self.game.logged_players.push(rc.clone());
                     }
+                }
+
+                if name.len() > 0 {
+                    self.user_logged_in(&name.to_owned());
+                } else {
+                    self.add_directed_server_chat_message(
+                        String::from("Wrong password"),
+                        player_index,
+                    );
                 }
             }
         } else {
             self.add_directed_server_chat_message(
                 String::from("You are logged in before"),
-                player_i,
+                player_index,
             );
         }
+    }
+
+    pub(crate) fn save_data(&mut self) {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "insert into public.\"Stats\" values((select max(\"Id\")+1 from public.\"Stats\"), (select max(\"Season\") from public.\"Stats\"), {},{},NOW(), 0)",
+            self.game.red_score,
+            self.game.blue_score
+        );
+        conn.prepare(&str_sql).unwrap();
+
+        // for i in self.game.game_players.iter() {
+        //     let pl = &Rc::as_ref(i);
+        //     match pl {
+        //         RHQMGamePlayer::Player {
+        //             player_i_r,
+        //             player_name_r,
+        //             player_points,
+        //             player_team,
+        //             goals,
+        //             assists,
+        //         } => {
+        //             let str_sql_player = format!(
+        //                 "insert into public.\"GameStats\" values((select max(\"Id\")+1 from public.\"GameStats\"), (select max(\"Id\")+1 from public.\"Stats\"), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), {}, {}, {}, {}, false )",
+        //                 player_name_r,
+        //                 player_team,
+        //                 goals,
+        //                 assists,
+        //                 10
+        //             );
+        //             conn.prepare(&str_sql_player).unwrap();
+        //         }
+        //     }
+        // }
     }
 }

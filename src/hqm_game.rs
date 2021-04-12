@@ -151,6 +151,9 @@ pub(crate) struct HQMGame {
     pub(crate) game_over: bool,
     pub(crate) packet: u32,
     pub(crate) logged_players: Vec<Rc<RHQMPlayer>>,
+    pub(crate) ranked_started: bool,
+    pub(crate) ranked_count: u32,
+    pub(crate) game_players: Vec<Rc<RHQMGamePlayer>>,
 
     pub(crate) active: bool,
 }
@@ -201,6 +204,9 @@ impl HQMGame {
             packet: u32::MAX,
             active: false,
             logged_players: Vec::new(),
+            ranked_started: false,
+            ranked_count: 2,
+            game_players: Vec::new(),
         }
     }
 
@@ -1071,7 +1077,19 @@ pub(crate) enum HQMMessage {
 pub(crate) enum RHQMPlayer {
     Player {
         player_name: String,
-        player_index: usize,
+        player_i: usize,
+    },
+}
+
+#[derive(Debug, Clone)]
+pub(crate) enum RHQMGamePlayer {
+    Player {
+        player_name_r: String,
+        player_i_r: usize,
+        player_points: i64,
+        player_team: usize,
+        goals: usize,
+        assists: usize,
     },
 }
 
@@ -1112,7 +1130,7 @@ pub enum HQMGameState {
 impl Display for HQMGameState {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            HQMGameState::Warmup => write!(f, "Waiting for players"),
+            HQMGameState::Warmup => write!(f, "Warmup"),
             HQMGameState::Game => write!(f, "Game"),
             HQMGameState::Intermission => write!(f, "Intermission"),
             HQMGameState::GoalScored => write!(f, "Timeout"),
