@@ -1,0 +1,20 @@
+[2mApr 20 09:23:01.320[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 20 09:23:01.322[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 20 09:23:04.241[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) joined server from address 192.168.142.136:61545
+[2mApr 20 09:23:08.366[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:62720
+[2mApr 20 09:23:10.793[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 20 09:23:10.793[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) has joined team Blue
+[2mApr 20 09:24:47.363[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) exited server
+[2mApr 20 09:24:48.322[0m [32m INFO[0m migo_hqm_server::hqm_server: test (0) exited server
+[2mApr 20 09:24:48.331[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 1 abandoned
+[2mApr 20 09:24:48.331[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 2 started
+[2mApr 20 09:33:26.914[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mApr 20 09:33:26.917[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mApr 20 09:33:32.459[0m [32m INFO[0m migo_hqm_server::hqm_server: test2 (0) joined server from address 192.168.142.136:56011
+[2mApr 20 09:33:37.732[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) joined server from address 192.168.142.136:56809
+[2mApr 20 09:33:41.319[0m [32m INFO[0m migo_hqm_server::hqm_server: test (2) joined server from address 192.168.142.136:57780
+[2mApr 20 09:33:48.682[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (1) has joined team Red
+[2mApr 20 09:33:48.683[0m [32m INFO[0m migo_hqm_server::hqm_server: test (2) has joined team Blue
+[2mApr 20 09:34:29.566[0m [32m INFO[0m migo_hqm_server::hqm_server: test2 (0) exited server
+[2mApr 20 09:34:35.303[0m [32m INFO[0m migo_hqm_server::hqm_server: testing1 (0) joined server from address 192.168.142.136:65500
+[2mApr 20 09:36:58.907[0m [32m INFO[0m migo_hqm_server::hqm_server: testing1 (0) has joined team Red
