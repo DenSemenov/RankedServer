@@ -53,8 +53,13 @@ impl HQMGameWorld {
     ) -> Option<usize> {
         let object_slot = self.find_empty_puck_slot();
         if let Some(i) = object_slot {
-            self.objects[i] =
-                HQMGameObject::Puck(HQMPuck::new(i, start, rot, cylinder_puck_post_collision));
+            self.objects[i] = HQMGameObject::Puck(HQMPuck::new(
+                i,
+                start,
+                start,
+                rot,
+                cylinder_puck_post_collision,
+            ));
         }
         return object_slot;
     }
@@ -251,7 +256,7 @@ impl HQMGame {
             mini_game_warmup: 0,
             pucks_in_net: vec![],
             next_game_player: String::from(""),
-            last_mini_game: 0,
+            last_mini_game: 1,
             last_mini_game_changed: true,
             force_intermission: false,
         }
@@ -1596,6 +1601,7 @@ impl HQMPuck {
     fn new(
         object_index: usize,
         pos: Point3<f32>,
+        prev_pos: Point3<f32>,
         rot: Matrix3<f32>,
         cylinder_puck_post_collision: bool,
     ) -> Self {
@@ -1605,7 +1611,7 @@ impl HQMPuck {
                 pos,
                 linear_velocity: Vector3::new(0.0, 0.0, 0.0),
                 rot,
-                prev_pos: pos,
+                prev_pos,
                 angular_velocity: Vector3::new(0.0, 0.0, 0.0),
                 rot_mul: Vector3::new(223.5, 128.0, 223.5),
             },

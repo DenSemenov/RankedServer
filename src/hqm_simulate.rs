@@ -86,9 +86,9 @@ impl HQMGameWorld {
         }
 
         let pucks_old_pos: Vec<Point3<f32>> = pucks.iter().map(|x| x.body.pos.clone()).collect();
-
-        for puck in pucks.iter_mut() {
+        for (puck, old_puck_pos) in pucks.iter_mut().zip(pucks_old_pos.iter()) {
             puck.body.linear_velocity[1] -= self.gravity;
+            puck.body.prev_pos = old_puck_pos.to_owned();
         }
 
         update_sticks_and_pucks(&mut players, &mut pucks, &self.rink, &mut events);
@@ -125,7 +125,6 @@ fn update_sticks_and_pucks(
             player.stick_pos += player.stick_velocity.scale(0.1);
         }
         for puck in pucks.iter_mut() {
-            puck.body.prev_pos = puck.body.pos;
             puck.body.pos += puck.body.linear_velocity.scale(0.1);
 
             let puck_linear_velocity_before = puck.body.linear_velocity.clone_owned();

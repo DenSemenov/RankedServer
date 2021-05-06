@@ -1264,12 +1264,11 @@ impl HQMServer {
                 // self.set_team(random_player, Some(HQMTeam::Red));
                 // self.render_pucks(8);
             }
-            // 1 => {
-            //     // let random_player = self.get_random_logged_player();
-            //     // self.set_team(random_player, Some(HQMTeam::Red));
-            //     // self.game.world.gravity = 0.000210555;
-            //     self.render_pucks(1);
-            // }
+            1 => {
+                // let random_player = self.get_random_logged_player();
+                // self.set_team(random_player, Some(HQMTeam::Red));
+                // self.game.world.gravity = 0.000210555;
+            }
             // 2 => {
             //     let random_player = self.get_random_logged_player();
             //     self.set_team(random_player, Some(HQMTeam::Red));
@@ -1290,15 +1289,17 @@ impl HQMServer {
                 mini_game_name = format!("Shoots - best result by {}", best);
                 mini_game_description = String::from("Score 8 goals in less time");
             }
-            // 1 => {
-            //     if self.game.logged_players.len() >= 2 {
-            //         mini_game_name = String::from("Shootouts");
-            //         mini_game_description = String::from("Shootouts with random players");
-            //     } else {
-            //         self.game.last_mini_game += 1;
-            //         self.get_next_mini_game();
-            //     }
-            // }
+            1 => {
+                self.game.mini_game_warmup = 500;
+
+                if self.game.logged_players.len() >= 2 {
+                    mini_game_name = String::from("Shootouts");
+                    mini_game_description = String::from("Shootouts with random players");
+                } else {
+                    self.game.last_mini_game += 1;
+                    self.get_next_mini_game();
+                }
+            }
             // 2 => {
             //     if self.game.logged_players.len() >= 2 {
             //         mini_game_name = String::from("Touch counter");
