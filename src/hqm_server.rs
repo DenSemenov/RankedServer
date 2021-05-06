@@ -2127,7 +2127,7 @@ impl HQMServer {
                                 } else {
                                     if self.game.mini_game_time > 0 {
                                         if self.game.mini_game_time == 4000 {
-                                            self.render_pucks(8);
+                                            self.render_pucks(9);
                                         }
 
                                         let mut pucks = vec![];
