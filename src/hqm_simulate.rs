@@ -125,6 +125,7 @@ fn update_sticks_and_pucks(
             player.stick_pos += player.stick_velocity.scale(0.1);
         }
         for puck in pucks.iter_mut() {
+            puck.body.prev_pos = puck.body.pos;
             puck.body.pos += puck.body.linear_velocity.scale(0.1);
 
             let puck_linear_velocity_before = puck.body.linear_velocity.clone_owned();
@@ -603,8 +604,6 @@ fn puck_detection(
         }
     }
 }
-
-
 
 fn do_puck_post_forces(
     puck: &mut HQMPuck,

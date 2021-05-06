@@ -1340,7 +1340,8 @@ impl HQMRink {
 
 #[derive(Debug, Clone)]
 pub(crate) struct HQMBody {
-    pub(crate) pos: Point3<f32>,               // Measured in meters
+    pub(crate) pos: Point3<f32>,
+    pub(crate) prev_pos: Point3<f32>,          // Measured in meters
     pub(crate) linear_velocity: Vector3<f32>,  // Measured in meters per hundred of a second
     pub(crate) rot: Matrix3<f32>,              // Rotation matrix
     pub(crate) angular_velocity: Vector3<f32>, // Measured in radians per hundred of a second
@@ -1446,6 +1447,7 @@ impl HQMSkater {
                 pos: pos.clone(),
                 linear_velocity,
                 rot,
+                prev_pos: pos.clone(),
                 angular_velocity: Vector3::new(0.0, 0.0, 0.0),
                 rot_mul: Vector3::new(2.75, 6.16, 2.35),
             },
@@ -1603,6 +1605,7 @@ impl HQMPuck {
                 pos,
                 linear_velocity: Vector3::new(0.0, 0.0, 0.0),
                 rot,
+                prev_pos: pos,
                 angular_velocity: Vector3::new(0.0, 0.0, 0.0),
                 rot_mul: Vector3::new(223.5, 128.0, 223.5),
             },
