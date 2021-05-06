@@ -2222,16 +2222,16 @@ impl HQMServer {
             (HQMTeam::Blue, &self.game.world.rink.blue_lines_and_net.net),
         ] {
             if (&net.left_post - puck.body.pos).dot(&net.normal) >= 0.0 {
-                if (&net.left_post - puck.body.prev_pos).dot(&net.normal) < 0.0 {
-                    if (&net.left_post - puck.body.pos).dot(&net.left_post_inside) < 0.0
-                        && (&net.right_post - puck.body.pos).dot(&net.right_post_inside) < 0.0
-                        && puck.body.pos.y < 1.0
-                    {
-                        result = 1;
-                    } else {
-                        result = 2;
-                    }
+                // if (&net.left_post - puck.body.prev_pos).dot(&net.normal) < 0.0 {
+                if (&net.left_post - puck.body.pos).dot(&net.left_post_inside) < 0.0
+                    && (&net.right_post - puck.body.pos).dot(&net.right_post_inside) < 0.0
+                    && puck.body.pos.y < 1.0
+                {
+                    result = 1;
+                } else {
+                    result = 2;
                 }
+                // }
             }
         }
 
