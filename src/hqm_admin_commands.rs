@@ -2,13 +2,17 @@ extern crate crypto;
 
 use crate::hqm_admin_commands::crypto::digest::Digest;
 use crate::hqm_game::{
-    HQMGameObject, HQMGameState, HQMMessage, HQMTeam, RHQMGamePlayer, RHQMPlayer,
+    HQMGameObject, HQMGameState, HQMGameWorld, HQMMessage, HQMRink, HQMTeam, RHQMGamePlayer,
+    RHQMPlayer,
 };
 use crate::hqm_server::{
     HQMIcingConfiguration, HQMMuteStatus, HQMOffsideConfiguration, HQMServer, HQMServerMode,
+    HQMSpawnPoint,
 };
 use crypto::md5::Md5;
+use nalgebra::{Matrix3, Point3};
 use postgres::{Connection, SslMode};
+use rand::seq::SliceRandom;
 use std::net::SocketAddr;
 use std::num;
 use std::rc::Rc;
@@ -915,6 +919,11 @@ impl HQMServer {
                 let sum = self.randomize_players();
                 self.force_players_off_ice_by_system();
                 self.set_teams_by_server(sum);
+            } else {
+                if self.game.logged_players.len() == 1 {
+                    self.game.time = 0;
+                    self.game.paused = false;
+                }
             }
         } else {
             let msg = format!(
@@ -1005,8 +1014,7 @@ impl HQMServer {
         let mut sum = 0;
 
         for i in self.game.logged_players.iter() {
-            let pl = &Rc::as_ref(i);
-            match pl {
+            match i {
                 RHQMPlayer::Player {
                     player_i,
                     player_name,
@@ -1053,12 +1061,49 @@ impl HQMServer {
         return score as usize;
     }
 
+    pub fn save_mini_game_result(name: &String, result: String) {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "insert into public.\"MiniGamesStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"MiniGamesStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
+            name,
+            result
+        );
+
+        conn.execute(&str_sql, &[]).unwrap();
+    }
+
+    pub fn get_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"MiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
+        }
+
+        return player;
+    }
+
     pub(crate) fn login(&mut self, player_index: usize, password_user: &str) {
         let mut logged = false;
         if let Some(player) = &self.players[player_index] {
             for i in self.game.logged_players.iter() {
-                let pl = &Rc::as_ref(i);
-                match pl {
+                match i {
                     RHQMPlayer::Player {
                         player_i: _,
                         player_name,
@@ -1073,8 +1118,7 @@ impl HQMServer {
 
         if let Some(player) = &self.players[player_index] {
             for i in self.game.logged_players_for_next.iter() {
-                let pl = &Rc::as_ref(i);
-                match pl {
+                match i {
                     RHQMPlayer::Player {
                         player_i: _,
                         player_name,
@@ -1124,15 +1168,14 @@ impl HQMServer {
                             player_i: player_index,
                             player_name: player.player_name.to_string(),
                         };
-                        let rc = Rc::new(player_item);
 
                         name = player.player_name.to_string();
 
                         if (self.game.logged_players.len()) < self.game.ranked_count {
-                            self.game.logged_players.push(rc.clone());
+                            self.game.logged_players.push(player_item.clone());
                         } else {
                             next = true;
-                            self.game.logged_players_for_next.push(rc.clone());
+                            self.game.logged_players_for_next.push(player_item.clone());
                         }
                     }
                 }
@@ -1151,6 +1194,129 @@ impl HQMServer {
                 String::from("You are logged in before"),
                 player_index,
             );
+        }
+    }
+
+    pub(crate) fn render_pucks(&mut self, puck_count: usize) {
+        let puck_line_start = self.game.world.rink.width / 2.0 - 0.4 * ((10 - 1) as f32);
+
+        self.game.world.puck_slots = puck_count;
+        for i in 0..puck_count {
+            let pos = Point3::new(
+                puck_line_start + 0.8 * (i as f32),
+                1.5,
+                self.game.world.rink.length / 2.0,
+            );
+            let rot = Matrix3::identity();
+            self.game
+                .world
+                .create_puck_object(pos, rot, self.config.cylinder_puck_post_collision);
+        }
+    }
+
+    pub(crate) fn get_random_logged_player(&mut self) -> usize {
+        let mut players: Vec<usize> = vec![];
+
+        for i in self.game.logged_players.iter() {
+            match i {
+                RHQMPlayer::Player {
+                    player_i,
+                    player_name: _,
+                } => {
+                    players.push(player_i.to_owned());
+                }
+            }
+        }
+
+        let first: Vec<_> = players
+            .choose_multiple(&mut rand::thread_rng(), 1)
+            .collect();
+
+        return first[0].to_owned();
+    }
+
+    pub(crate) fn new_world(&mut self) {
+        let mut object_vec = Vec::with_capacity(32);
+        for _ in 0..32 {
+            object_vec.push(HQMGameObject::None);
+        }
+        let rink = HQMRink::new(30.0, 61.0, 8.5);
+        self.game.world = HQMGameWorld {
+            objects: object_vec,
+            puck_slots: 1,
+            rink,
+            gravity: 0.000680555,
+            limit_jump_speed: false,
+        };
+
+        self.config.spawn_point = HQMSpawnPoint::Center;
+    }
+
+    pub(crate) fn init_mini_game(&mut self) {
+        self.force_players_off_ice_by_system();
+        self.new_world();
+        self.config.spawn_point = HQMSpawnPoint::Center;
+        self.game.world.gravity = 0.000680555;
+
+        match self.game.last_mini_game {
+            0 => {
+                // let random_player = self.get_random_logged_player();
+                // self.set_team(random_player, Some(HQMTeam::Red));
+                // self.render_pucks(8);
+            }
+            // 1 => {
+            //     // let random_player = self.get_random_logged_player();
+            //     // self.set_team(random_player, Some(HQMTeam::Red));
+            //     // self.game.world.gravity = 0.000210555;
+            //     self.render_pucks(1);
+            // }
+            // 2 => {
+            //     let random_player = self.get_random_logged_player();
+            //     self.set_team(random_player, Some(HQMTeam::Red));
+            //     self.game.world.gravity = 0.000680555;
+            //     self.render_pucks(1);
+            // }
+            _ => {}
+        }
+    }
+
+    pub(crate) fn get_next_mini_game(&mut self) {
+        let mut mini_game_name = String::from("");
+        let mut mini_game_description = String::from("");
+        match self.game.last_mini_game {
+            0 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_mini_game_best_result();
+                mini_game_name = format!("Shoots - best result by {}", best);
+                mini_game_description = String::from("Score 8 goals in less time");
+            }
+            // 1 => {
+            //     if self.game.logged_players.len() >= 2 {
+            //         mini_game_name = String::from("Shootouts");
+            //         mini_game_description = String::from("Shootouts with random players");
+            //     } else {
+            //         self.game.last_mini_game += 1;
+            //         self.get_next_mini_game();
+            //     }
+            // }
+            // 2 => {
+            //     if self.game.logged_players.len() >= 2 {
+            //         mini_game_name = String::from("Touch counter");
+            //         mini_game_description = String::from("Shoots");
+            //     } else {
+            //         self.game.last_mini_game += 1;
+            //         self.get_next_mini_game();
+            //     }
+            // }
+            _ => {
+                self.game.last_mini_game = 0;
+                self.get_next_mini_game();
+            }
+        }
+
+        if mini_game_name.len() != 0 {
+            self.add_server_chat_message(format!("Next mini-game: {}", mini_game_name));
+            self.add_server_chat_message(format!("Description: {}", mini_game_description));
         }
     }
 

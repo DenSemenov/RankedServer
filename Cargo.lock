@@ -507,6 +507,7 @@ dependencies = [
  "chrono",
  "nalgebra",
  "postgres",
+ "rand 0.7.3",
  "reqwest",
  "rust-crypto",
  "rust-ini",

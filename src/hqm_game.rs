@@ -150,8 +150,8 @@ pub(crate) struct HQMGame {
     pub(crate) game_step: u32,
     pub(crate) game_over: bool,
     pub(crate) packet: u32,
-    pub(crate) logged_players: Vec<Rc<RHQMPlayer>>,
-    pub(crate) logged_players_for_next: Vec<Rc<RHQMPlayer>>,
+    pub(crate) logged_players: Vec<RHQMPlayer>,
+    pub(crate) logged_players_for_next: Vec<RHQMPlayer>,
     pub(crate) ranked_started: bool,
     pub(crate) ranked_count: usize,
     pub(crate) game_players: Vec<RHQMGamePlayer>,
@@ -164,6 +164,15 @@ pub(crate) struct HQMGame {
     pub(crate) shootout_number: usize,
     pub(crate) data_saved: bool,
     pub(crate) active: bool,
+
+    pub(crate) mini_game_time: usize,
+    pub(crate) mini_game_warmup: usize,
+    pub(crate) pucks_in_net: Vec<usize>,
+    pub(crate) next_game_player: String,
+
+    pub(crate) last_mini_game: usize,
+    pub(crate) last_mini_game_changed: bool,
+    pub(crate) force_intermission: bool,
 }
 
 impl HQMGame {
@@ -203,7 +212,7 @@ impl HQMGame {
             period: 0,
             time: 30000,
             is_intermission_goal: false,
-            time_break: 0,
+            time_break: 1000,
             paused: true,
 
             game_over: false,
@@ -238,27 +247,38 @@ impl HQMGame {
             ],
             shootout_number: 0,
             data_saved: false,
+            mini_game_time: 0,
+            mini_game_warmup: 0,
+            pucks_in_net: vec![],
+            next_game_player: String::from(""),
+            last_mini_game: 0,
+            last_mini_game_changed: true,
+            force_intermission: false,
         }
     }
 
     pub(crate) fn update_game_state(&mut self) {
-        self.state = if !self.paused {
-            if self.game_over {
-                HQMGameState::GameOver
-            } else if self.time_break > 0 {
-                if self.is_intermission_goal {
-                    HQMGameState::GoalScored
-                } else {
-                    HQMGameState::Intermission
-                }
-            } else if self.period == 0 {
-                HQMGameState::Warmup
-            } else {
-                HQMGameState::Game
-            }
+        if self.force_intermission {
+            self.state = HQMGameState::Intermission
         } else {
-            HQMGameState::Paused
-        };
+            self.state = if !self.paused {
+                if self.game_over {
+                    HQMGameState::GameOver
+                } else if self.time_break > 0 {
+                    if self.is_intermission_goal {
+                        HQMGameState::GoalScored
+                    } else {
+                        HQMGameState::Intermission
+                    }
+                } else if self.period == 0 {
+                    HQMGameState::Warmup
+                } else {
+                    HQMGameState::Game
+                }
+            } else {
+                HQMGameState::Paused
+            };
+        }
     }
 }
 
