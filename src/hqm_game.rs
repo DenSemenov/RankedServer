@@ -173,6 +173,7 @@ pub(crate) struct HQMGame {
     pub(crate) mini_game_time: usize,
     pub(crate) mini_game_warmup: usize,
     pub(crate) pucks_in_net: Vec<usize>,
+    pub(crate) next_game_player_index: usize,
     pub(crate) next_game_player: String,
 
     pub(crate) last_mini_game: usize,
@@ -255,6 +256,7 @@ impl HQMGame {
             mini_game_time: 0,
             mini_game_warmup: 0,
             pucks_in_net: vec![],
+            next_game_player_index: 0,
             next_game_player: String::from(""),
             last_mini_game: 1,
             last_mini_game_changed: true,

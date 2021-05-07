@@ -2123,8 +2123,12 @@ impl HQMServer {
                                         self.force_players_off_ice_by_system();
 
                                         self.config.spawn_point = HQMSpawnPoint::Bench;
-                                        let random_player = self.get_random_logged_player();
-                                        self.set_team(random_player, Some(HQMTeam::Red));
+                                        self.game.next_game_player_index =
+                                            self.get_random_logged_player();
+                                        self.set_team(
+                                            self.game.next_game_player_index,
+                                            Some(HQMTeam::Red),
+                                        );
 
                                         for i in self.game.logged_players.iter() {
                                             match i {
@@ -2132,7 +2136,8 @@ impl HQMServer {
                                                     player_i,
                                                     player_name,
                                                 } => {
-                                                    if player_i == &random_player {
+                                                    if player_i == &self.game.next_game_player_index
+                                                    {
                                                         self.game.next_game_player =
                                                             player_name.to_owned();
                                                     }
@@ -2151,10 +2156,10 @@ impl HQMServer {
                                     if self.game.mini_game_warmup % 100 == 0
                                         && self.game.mini_game_warmup < 400
                                     {
-                                        self.add_server_chat_message(format!(
-                                            "{}",
-                                            self.game.mini_game_warmup / 100
-                                        ));
+                                        self.add_directed_server_chat_message(
+                                            format!("{}", self.game.mini_game_warmup / 100),
+                                            self.game.next_game_player_index,
+                                        );
                                     }
                                     self.game.mini_game_warmup -= 1;
                                 } else {
@@ -2187,12 +2192,26 @@ impl HQMServer {
 
                                                     self.game.pucks_in_net.push(puck.index);
 
-                                                    self.add_server_chat_message(format!(
-                                                        "Puck in net [{}/8] ({}.{})",
-                                                        self.game.pucks_in_net.len(),
-                                                        (4000 - self.game.mini_game_time) / 100,
-                                                        (4000 - self.game.mini_game_time) % 100
-                                                    ));
+                                                    if self.game.pucks_in_net.len() > 6 {
+                                                        self.add_server_chat_message(format!(
+                                                            "Puck in net [{}/8] ({}.{})",
+                                                            self.game.pucks_in_net.len(),
+                                                            (4000 - self.game.mini_game_time) / 100,
+                                                            (4000 - self.game.mini_game_time) % 100
+                                                        ));
+                                                    } else {
+                                                        self.add_directed_server_chat_message(
+                                                            format!(
+                                                                "Puck in net [{}/8] ({}.{})",
+                                                                self.game.pucks_in_net.len(),
+                                                                (4000 - self.game.mini_game_time)
+                                                                    / 100,
+                                                                (4000 - self.game.mini_game_time)
+                                                                    % 100
+                                                            ),
+                                                            self.game.next_game_player_index,
+                                                        );
+                                                    }
 
                                                     if self.game.pucks_in_net.len() == 8 {
                                                         let result = format!(
