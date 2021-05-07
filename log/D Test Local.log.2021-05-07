@@ -1,0 +1,6 @@
+[2mMay 07 10:43:25.622[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mMay 07 10:43:25.625[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mMay 07 10:43:26.579[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:56372
+[2mMay 07 10:43:38.685[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) has joined team Red
+[2mMay 07 10:43:48.007[0m [32m INFO[0m migo_hqm_server::hqm_server: test (1) joined server from address 192.168.142.136:50008
+[2mMay 07 10:44:23.696[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) has joined team Red

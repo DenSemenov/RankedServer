@@ -1079,6 +1079,42 @@ impl HQMServer {
         return self.players.iter().position(|x| x.is_none());
     }
 
+    fn send_directed_sign_up_messages(&mut self) {
+        let mut indexes = vec![];
+        for (player_index, player) in self.players.iter().enumerate() {
+            if let Some(player) = player {
+                let mut exist = false;
+                for i in self.game.logged_players.iter() {
+                    match i {
+                        RHQMPlayer::Player {
+                            player_i: _,
+                            player_name,
+                        } => {
+                            if player_name == &player.player_name {
+                                exist = true;
+                            }
+                        }
+                    }
+                }
+
+                if !exist {
+                    indexes.push(player_index)
+                }
+            }
+        }
+
+        for i in indexes.iter() {
+            self.add_directed_server_chat_message(
+                String::from("Sign up on https://rhqm.site"),
+                i.to_owned(),
+            );
+            self.add_directed_server_chat_message(
+                String::from("Type /l <password> or /login <password> to join ranked game"),
+                i.to_owned(),
+            );
+        }
+    }
+
     fn update_players_and_input(&mut self) {
         let mut red_player_count = 0usize;
         let mut blue_player_count = 0usize;
@@ -1211,10 +1247,7 @@ impl HQMServer {
                             }
                         }
 
-                        self.add_server_chat_message(format!(
-                            "Type /l <password> or /login <password> to join ranked game"
-                        ));
-                        self.add_server_chat_message(format!("Sign up on https://rhqm.site"));
+                        self.send_directed_sign_up_messages();
 
                         if self.game.logged_players.len() > 0 {
                             self.add_server_chat_message(format!(
