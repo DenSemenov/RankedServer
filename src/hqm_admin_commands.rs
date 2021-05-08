@@ -1264,7 +1264,9 @@ impl HQMServer {
         let mut players: Vec<usize> = vec![];
 
         for player in self.game.logged_players.iter() {
-            players.push(player.player_i);
+            if !player.afk {
+                players.push(player.player_i);
+            }
         }
 
         let first: Vec<_> = players
