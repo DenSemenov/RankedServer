@@ -269,6 +269,12 @@ impl HQMServer {
             "l" => {
                 self.login(player_index, arg);
             }
+            "afk" => {
+                self.afk(player_index);
+            }
+            "here" => {
+                self.here(player_index);
+            }
             "enablejoin" => {
                 self.set_allow_join(player_index, true);
             }
@@ -964,16 +970,9 @@ impl HQMServer {
 
                 let mut logged_index = 0;
                 let mut logged_selected = 999;
-                for i in self.game.logged_players.iter() {
-                    match i {
-                        RHQMPlayer::Player {
-                            player_i,
-                            player_name: _,
-                        } => {
-                            if player_i == &player_index {
-                                logged_selected = logged_index;
-                            }
-                        }
+                for player in self.game.logged_players.iter() {
+                    if player.player_i == player_index {
+                        logged_selected = logged_index;
                     }
                     logged_index += 1;
                 }
@@ -1084,16 +1083,9 @@ impl HQMServer {
         for (player_index, player) in self.players.iter().enumerate() {
             if let Some(player) = player {
                 let mut exist = false;
-                for i in self.game.logged_players.iter() {
-                    match i {
-                        RHQMPlayer::Player {
-                            player_i: _,
-                            player_name,
-                        } => {
-                            if player_name == &player.player_name {
-                                exist = true;
-                            }
-                        }
+                for player_item in self.game.logged_players.iter() {
+                    if player_item.player_name == player.player_name {
+                        exist = true;
                     }
                 }
 
@@ -1225,25 +1217,18 @@ impl HQMServer {
                     if secs != self.last_sec {
                         self.last_sec = secs;
                         let mut joined = String::from("");
-                        for i in self.game.logged_players.iter() {
-                            match i {
-                                RHQMPlayer::Player {
-                                    player_i: _,
-                                    player_name,
-                                } => {
-                                    let val;
-                                    if player_name.len() > 2 {
-                                        val = &player_name[0..3];
-                                    } else {
-                                        val = &player_name;
-                                    }
+                        for player in self.game.logged_players.iter() {
+                            let mut val = String::from("");
+                            if player.player_name.len() > 2 {
+                                val = player.player_name[0..3].to_string();
+                            } else {
+                                val = player.player_name.to_string();
+                            }
 
-                                    if joined.len() != 0 {
-                                        joined = format!("{}{}{}", joined, String::from(", "), val);
-                                    } else {
-                                        joined = val.to_string();
-                                    }
-                                }
+                            if joined.len() != 0 {
+                                joined = format!("{}{}{}", joined, String::from(", "), val);
+                            } else {
+                                joined = val.to_string();
                             }
                         }
 
@@ -2130,18 +2115,10 @@ impl HQMServer {
                                             Some(HQMTeam::Red),
                                         );
 
-                                        for i in self.game.logged_players.iter() {
-                                            match i {
-                                                RHQMPlayer::Player {
-                                                    player_i,
-                                                    player_name,
-                                                } => {
-                                                    if player_i == &self.game.next_game_player_index
-                                                    {
-                                                        self.game.next_game_player =
-                                                            player_name.to_owned();
-                                                    }
-                                                }
+                                        for player in self.game.logged_players.iter() {
+                                            if player.player_i == self.game.next_game_player_index {
+                                                self.game.next_game_player =
+                                                    player.player_name.to_owned();
                                             }
                                         }
 

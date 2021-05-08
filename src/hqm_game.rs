@@ -1713,11 +1713,10 @@ pub(crate) enum HQMMessage {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) enum RHQMPlayer {
-    Player {
-        player_name: String,
-        player_i: usize,
-    },
+pub(crate) struct RHQMPlayer {
+    pub player_name: String,
+    pub player_i: usize,
+    pub afk: bool,
 }
 
 #[derive(Debug, Clone)]

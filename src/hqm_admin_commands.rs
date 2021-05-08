@@ -1028,34 +1028,27 @@ impl HQMServer {
         self.add_server_chat_message(String::from("Ranked game starting"));
         let mut sum = 0;
 
-        for i in self.game.logged_players.iter() {
-            match i {
-                RHQMPlayer::Player {
-                    player_i,
-                    player_name,
-                } => {
-                    let points = Self::get_player_points(player_name);
-                    let player_item = RHQMGamePlayer {
-                        player_i_r: player_i.to_owned(),
-                        player_name_r: player_name.to_string(),
-                        player_points: points,
-                        player_team: 0,
-                        goals: 0,
-                        assists: 0,
-                        leaved_seconds: 120,
-                    };
+        for player in self.game.logged_players.iter() {
+            let points = Self::get_player_points(player.player_name.to_string());
+            let player_item = RHQMGamePlayer {
+                player_i_r: player.player_i,
+                player_name_r: player.player_name.to_string(),
+                player_points: points,
+                player_team: 0,
+                goals: 0,
+                assists: 0,
+                leaved_seconds: 120,
+            };
 
-                    sum = sum + points;
+            sum = sum + points;
 
-                    self.game.game_players.push(player_item);
-                }
-            }
+            self.game.game_players.push(player_item);
         }
 
         return sum;
     }
 
-    pub fn get_player_points(login: &str) -> usize {
+    pub fn get_player_points(login: String) -> usize {
         let conn = Connection::connect(
             "postgresql://test:test@89.223.89.237:5432/rhqm",
             &SslMode::None,
@@ -1092,6 +1085,51 @@ impl HQMServer {
         conn.execute(&str_sql, &[]).unwrap();
     }
 
+    pub(crate) fn afk(&mut self, player_index: usize) {
+        let mut exist = false;
+        let mut index = 0;
+        for player in self.game.logged_players.iter_mut() {
+            if player.player_i == player_index {
+                exist = true;
+            }
+            index += 1;
+        }
+
+        if exist {
+            self.game.logged_players[index].afk = true;
+            self.add_directed_server_chat_message(
+                String::from("You are afk, type /here if you want to play mini-games"),
+                player_index,
+            );
+        } else {
+            self.add_directed_server_chat_message(
+                String::from("You are not logged in"),
+                player_index,
+            );
+        }
+    }
+
+    pub(crate) fn here(&mut self, player_index: usize) {
+        let mut exist = false;
+        let mut index = 0;
+        for player in self.game.logged_players.iter_mut() {
+            if player.player_i == player_index {
+                exist = true;
+            }
+            index += 1;
+        }
+
+        if exist {
+            self.game.logged_players[index].afk = false;
+            self.add_directed_server_chat_message(String::from("You are not afk"), player_index);
+        } else {
+            self.add_directed_server_chat_message(
+                String::from("You are not logged in"),
+                player_index,
+            );
+        }
+    }
+
     pub fn get_mini_game_best_result() -> String {
         let conn = Connection::connect(
             "postgresql://test:test@89.223.89.237:5432/rhqm",
@@ -1117,31 +1155,17 @@ impl HQMServer {
     pub(crate) fn login(&mut self, player_index: usize, password_user: &str) {
         let mut logged = false;
         if let Some(player) = &self.players[player_index] {
-            for i in self.game.logged_players.iter() {
-                match i {
-                    RHQMPlayer::Player {
-                        player_i: _,
-                        player_name,
-                    } => {
-                        if &player.player_name == player_name {
-                            logged = true;
-                        }
-                    }
+            for player_item in self.game.logged_players.iter() {
+                if player.player_name == player_item.player_name {
+                    logged = true;
                 }
             }
         }
 
         if let Some(player) = &self.players[player_index] {
-            for i in self.game.logged_players_for_next.iter() {
-                match i {
-                    RHQMPlayer::Player {
-                        player_i: _,
-                        player_name,
-                    } => {
-                        if &player.player_name == player_name {
-                            logged = true;
-                        }
-                    }
+            for player_item in self.game.logged_players_for_next.iter() {
+                if player.player_name == player_item.player_name {
+                    logged = true;
                 }
             }
         }
@@ -1179,9 +1203,10 @@ impl HQMServer {
                 for row in stmt.query(&[]).unwrap() {
                     let count: i64 = row.get(0);
                     if count > 0 {
-                        let player_item = RHQMPlayer::Player {
+                        let player_item = RHQMPlayer {
                             player_i: player_index,
                             player_name: player.player_name.to_string(),
+                            afk: false,
                         };
 
                         name = player.player_name.to_string();
@@ -1197,6 +1222,12 @@ impl HQMServer {
 
                 if name.len() > 0 {
                     self.user_logged_in(&name.to_owned(), next);
+                    if !next {
+                        self.add_directed_server_chat_message(
+                            String::from("Type /afk if you don't want to play mini-games"),
+                            player_index,
+                        );
+                    }
                 } else {
                     self.add_directed_server_chat_message(
                         String::from("Wrong password"),
@@ -1232,15 +1263,8 @@ impl HQMServer {
     pub(crate) fn get_random_logged_player(&mut self) -> usize {
         let mut players: Vec<usize> = vec![];
 
-        for i in self.game.logged_players.iter() {
-            match i {
-                RHQMPlayer::Player {
-                    player_i,
-                    player_name: _,
-                } => {
-                    players.push(player_i.to_owned());
-                }
-            }
+        for player in self.game.logged_players.iter() {
+            players.push(player.player_i);
         }
 
         let first: Vec<_> = players
