@@ -1,0 +1,9 @@
+[2mMay 08 20:06:06.545[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mMay 08 20:06:06.551[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mMay 08 20:07:55.634[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:54296
+[2mMay 08 20:12:17.435[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mMay 08 20:12:17.437[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mMay 08 20:12:27.316[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) joined server from address 192.168.142.136:54804
+[2mMay 08 20:12:43.848[0m [32m INFO[0m migo_hqm_server::hqm_server: 7OnOff (0) exited server
+[2mMay 08 20:12:43.857[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 1 abandoned
+[2mMay 08 20:12:43.857[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 2 started

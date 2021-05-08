@@ -274,6 +274,21 @@ impl HQMServer {
         }
     }
 
+    pub(crate) fn test() {
+        let mut hasher = Md5::new();
+        let pass_str = String::from("TestingBigPassword1");
+
+        let bytes = pass_str.as_bytes();
+        hasher.input(bytes);
+        let mut output = [0; 16];
+        hasher.result(&mut output);
+        let mut result: String = "".to_string();
+        for i in output.to_vec().iter() {
+            let t = format!("{:X}", i);
+            result = format!("{}{}", result, t);
+        }
+    }
+
     pub(crate) fn kick_all_matching(
         &mut self,
         admin_player_index: usize,
@@ -1148,7 +1163,7 @@ impl HQMServer {
                 hasher.result(&mut output);
                 let mut result: String = "".to_string();
                 for i in output.to_vec().iter() {
-                    let t = format!("{:X}", i);
+                    let t = format!("{:02X}", i);
                     result = format!("{}{}", result, t);
                 }
 
