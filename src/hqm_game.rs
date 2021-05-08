@@ -1571,7 +1571,8 @@ impl HQMPlayerInput {
         self.keys & 0x10 != 0
     }
     pub fn spectate(&self) -> bool {
-        self.keys & 0x20 != 0
+        // self.keys & 0x20 != 0
+        false
     }
 }
 
