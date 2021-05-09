@@ -2110,33 +2110,39 @@ impl HQMServer {
                                         self.config.spawn_point = HQMSpawnPoint::Bench;
                                         self.game.next_game_player_index =
                                             self.get_random_logged_player();
-                                        self.set_team(
-                                            self.game.next_game_player_index,
-                                            Some(HQMTeam::Red),
-                                        );
 
-                                        for player in self.game.logged_players.iter() {
-                                            if player.player_i == self.game.next_game_player_index {
-                                                self.game.next_game_player =
-                                                    player.player_name.to_owned();
+                                        if self.game.next_game_player_index != 999 {
+                                            self.set_team(
+                                                self.game.next_game_player_index,
+                                                Some(HQMTeam::Red),
+                                            );
+
+                                            for player in self.game.logged_players.iter() {
+                                                if player.player_i
+                                                    == self.game.next_game_player_index
+                                                {
+                                                    self.game.next_game_player =
+                                                        player.player_name.to_owned();
+                                                }
                                             }
+
+                                            self.game.pucks_in_net = vec![];
+
+                                            self.add_server_chat_message(format!(
+                                                "Next try by {}",
+                                                self.game.next_game_player
+                                            ));
                                         }
-
-                                        self.game.pucks_in_net = vec![];
-
-                                        self.add_server_chat_message(format!(
-                                            "Next try by {}",
-                                            self.game.next_game_player
-                                        ));
                                     }
-
-                                    if self.game.mini_game_warmup % 100 == 0
-                                        && self.game.mini_game_warmup < 400
-                                    {
-                                        self.add_directed_server_chat_message(
-                                            format!("{}", self.game.mini_game_warmup / 100),
-                                            self.game.next_game_player_index,
-                                        );
+                                    if self.game.next_game_player_index != 999 {
+                                        if self.game.mini_game_warmup % 100 == 0
+                                            && self.game.mini_game_warmup < 400
+                                        {
+                                            self.add_directed_server_chat_message(
+                                                format!("{}", self.game.mini_game_warmup / 100),
+                                                self.game.next_game_player_index,
+                                            );
+                                        }
                                     }
                                     self.game.mini_game_warmup -= 1;
                                 } else {
@@ -2220,63 +2226,113 @@ impl HQMServer {
                             }
                             1 => {
                                 if self.game.mini_game_warmup > 0 {
-                                    if self.game.mini_game_warmup == 199 {
-                                        self.game.mini_game_time = 1500;
+                                    if self.game.mini_game_warmup == 499 {
+                                        self.game.mini_game_time = 30000;
                                         self.new_world();
                                         self.force_players_off_ice_by_system();
 
                                         self.config.spawn_point = HQMSpawnPoint::Center;
-                                        let first = self.get_random_logged_player();
-                                        self.set_team(first, Some(HQMTeam::Red));
+                                        self.game.next_game_player_index =
+                                            self.get_random_logged_player();
 
-                                        let mut sec: usize = 99;
-                                        while sec == 99 {
-                                            let second = self.get_random_logged_player();
-                                            if second != first {
-                                                sec = second.to_owned()
-                                            }
-                                        }
+                                        if self.game.next_game_player_index != 999 {
+                                            self.set_team_with_position(
+                                                self.game.next_game_player_index,
+                                                Some(HQMTeam::Blue),
+                                            );
 
-                                        let mut att = String::from("");
-                                        let mut gk = String::from("");
-
-                                        self.game.world.rink =
-                                            HQMRink::new_red_shootout(30.0, 61.0, 8.5);
-
-                                        self.set_team(first.to_owned(), Some(HQMTeam::Red));
-                                        self.set_preferred_faceoff_position(sec.to_owned(), "G");
-                                        self.set_team_with_position(
-                                            sec.to_owned(),
-                                            Some(HQMTeam::Blue),
-                                        );
-
-                                        for player in self.players.iter_mut() {
-                                            if let Some(player) = player {
-                                                if player.view_player_index == first.to_owned() {
-                                                    att = player.player_name.clone();
-                                                }
-                                                if player.view_player_index == sec.to_owned() {
-                                                    gk = player.player_name.clone();
+                                            for player in self.game.logged_players.iter() {
+                                                if player.player_i
+                                                    == self.game.next_game_player_index
+                                                {
+                                                    self.game.next_game_player =
+                                                        player.player_name.to_owned();
                                                 }
                                             }
+
+                                            self.game.gk_catches = 0;
+                                            self.game.gk_last_height = 2;
+                                            self.game.gk_last_vector = 2;
+                                            self.game.gk_speed = 0.3;
+                                            self.game.gk_puck_in_net = false;
+
+                                            self.add_server_chat_message(format!(
+                                                "Next try by {}",
+                                                self.game.next_game_player
+                                            ));
                                         }
-                                        let chat_msg = format!("{} vs {}(G)", att, gk);
-                                        self.add_server_chat_message(chat_msg);
                                     }
-
-                                    if self.game.mini_game_warmup % 100 == 0
-                                        && self.game.mini_game_warmup < 400
-                                    {
-                                        self.add_server_chat_message(format!(
-                                            "{}",
-                                            self.game.mini_game_warmup / 100
-                                        ));
+                                    if self.game.next_game_player_index != 999 {
+                                        if self.game.mini_game_warmup % 100 == 0
+                                            && self.game.mini_game_warmup < 400
+                                        {
+                                            self.add_directed_server_chat_message(
+                                                format!("{}", self.game.mini_game_warmup / 100),
+                                                self.game.next_game_player_index,
+                                            );
+                                        }
                                     }
                                     self.game.mini_game_warmup -= 1;
                                 } else {
                                     if self.game.mini_game_time > 0 {
-                                        if self.game.mini_game_time == 1500 {
+                                        if self.game.mini_game_time % 200 == 0
+                                            && self.game.gk_puck_in_net == false
+                                        {
                                             self.render_pucks(1);
+                                            for object in self.game.world.objects.iter_mut() {
+                                                if let HQMGameObject::Puck(puck) = object {
+                                                    puck.body.pos = Point3::new(
+                                                        self.game.world.rink.width / 2.0,
+                                                        self.game.gk_heights
+                                                            [self.game.gk_last_height],
+                                                        self.game.world.rink.length / 2.0,
+                                                    );
+
+                                                    let mut x_vec = 0.0;
+
+                                                    if self.game.gk_vectors
+                                                        [self.game.gk_last_vector]
+                                                        != 0.0
+                                                    {
+                                                        x_vec = self.game.gk_vectors
+                                                            [self.game.gk_last_vector]
+                                                            + (self.game.gk_speed - 0.3) / 100.0;
+                                                    } else {
+                                                        x_vec = self.game.gk_vectors
+                                                            [self.game.gk_last_vector];
+                                                    }
+
+                                                    puck.body.linear_velocity = Vector3::new(
+                                                        x_vec,
+                                                        0.0,
+                                                        -1.0 * self.game.gk_speed,
+                                                    );
+
+                                                    self.game.gk_last_vector += 1;
+
+                                                    if self.game.gk_last_vector == 5 {
+                                                        self.game.gk_last_vector = 0;
+                                                    }
+
+                                                    self.game.gk_last_height += 1;
+
+                                                    if self.game.gk_last_height == 5 {
+                                                        self.game.gk_last_height = 0;
+                                                    }
+                                                }
+                                            }
+
+                                            if self.game.gk_catches != 0
+                                                && self.game.gk_catches % 5 == 0
+                                            {
+                                                self.add_server_chat_message(format!(
+                                                    "{} pucks catched",
+                                                    self.game.gk_catches
+                                                ));
+                                            }
+
+                                            self.game.gk_catches += 1;
+                                            self.game.gk_speed += 0.02;
                                         }
 
                                         let mut pucks = vec![];
@@ -2290,25 +2346,27 @@ impl HQMServer {
                                         for puck in pucks.iter() {
                                             let result = self.check_puck_in_net(puck);
                                             if result == 1 {
+                                                self.game.gk_puck_in_net = true;
                                                 self.game.world.objects[puck.index] =
                                                     HQMGameObject::None;
 
-                                                self.add_server_chat_message(format!("Goal"));
+                                                Self::save_gk_mini_game_result(
+                                                    &self.game.next_game_player,
+                                                    (self.game.gk_catches - 1).to_string(),
+                                                );
 
-                                                self.game.mini_game_time = 300;
-                                            }
+                                                self.add_server_chat_message(format!(
+                                                    "{} pucks catched, result saved",
+                                                    (self.game.gk_catches - 1)
+                                                ));
 
-                                            if result == 2 {
-                                                self.game.world.objects[puck.index] =
-                                                    HQMGameObject::None;
-
-                                                self.game.mini_game_time = 300;
+                                                self.game.mini_game_time = 301;
                                             }
                                         }
 
                                         self.game.mini_game_time -= 1;
                                     } else {
-                                        self.game.mini_game_warmup = 200;
+                                        self.game.mini_game_warmup = 500;
                                     }
                                 }
                             }

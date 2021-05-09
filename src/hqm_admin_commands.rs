@@ -1085,20 +1085,38 @@ impl HQMServer {
         conn.execute(&str_sql, &[]).unwrap();
     }
 
+    pub fn save_gk_mini_game_result(name: &String, result: String) {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "insert into public.\"GkMiniGameStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"GkMiniGameStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
+            name,
+            result
+        );
+
+        conn.execute(&str_sql, &[]).unwrap();
+    }
+
     pub(crate) fn afk(&mut self, player_index: usize) {
         let mut exist = false;
         let mut index = 0;
+        let mut found_index = 0;
         for player in self.game.logged_players.iter_mut() {
             if player.player_i == player_index {
                 exist = true;
+                found_index = index;
             }
             index += 1;
         }
 
         if exist {
-            self.game.logged_players[index].afk = true;
+            self.game.logged_players[found_index].afk = true;
             self.add_directed_server_chat_message(
-                String::from("You are afk, type /here if you want to play mini-games"),
+                String::from("You are AFK, type /here if you want to play mini-games"),
                 player_index,
             );
         } else {
@@ -1112,16 +1130,18 @@ impl HQMServer {
     pub(crate) fn here(&mut self, player_index: usize) {
         let mut exist = false;
         let mut index = 0;
+        let mut found_index = 0;
         for player in self.game.logged_players.iter_mut() {
             if player.player_i == player_index {
                 exist = true;
+                found_index = index;
             }
             index += 1;
         }
 
         if exist {
-            self.game.logged_players[index].afk = false;
-            self.add_directed_server_chat_message(String::from("You are not afk"), player_index);
+            self.game.logged_players[found_index].afk = false;
+            self.add_directed_server_chat_message(String::from("You are not AFK"), player_index);
         } else {
             self.add_directed_server_chat_message(
                 String::from("You are not logged in"),
@@ -1138,7 +1158,29 @@ impl HQMServer {
         .unwrap();
 
         let str_sql = format!(
-            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"MiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" limit 1"
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"MiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\"limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
+        }
+
+        return player;
+    }
+
+    pub fn get_gk_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"GkMiniGameStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
         );
 
         let mut player = String::from("");
@@ -1262,18 +1304,38 @@ impl HQMServer {
 
     pub(crate) fn get_random_logged_player(&mut self) -> usize {
         let mut players: Vec<usize> = vec![];
-
         for player in self.game.logged_players.iter() {
             if !player.afk {
                 players.push(player.player_i);
             }
         }
 
-        let first: Vec<_> = players
-            .choose_multiple(&mut rand::thread_rng(), 1)
-            .collect();
+        let mut non_prev = false;
+        let mut index = 0;
 
-        return first[0].to_owned();
+        let mut found_index = 999;
+
+        while non_prev == false {
+            let first: Vec<_> = players
+                .choose_multiple(&mut rand::thread_rng(), 1)
+                .collect();
+
+            if first.len() != 0 {
+                found_index = first[0].to_owned();
+
+                if found_index != self.game.last_random_index {
+                    non_prev = true;
+                }
+            }
+            index += 1;
+            if index == 4 {
+                non_prev = true;
+            }
+        }
+
+        self.game.last_random_index = found_index;
+
+        return found_index;
     }
 
     pub(crate) fn new_world(&mut self) {
@@ -1305,11 +1367,11 @@ impl HQMServer {
                 // self.set_team(random_player, Some(HQMTeam::Red));
                 // self.render_pucks(8);
             }
-            // 1 => {
-            //     // let random_player = self.get_random_logged_player();
-            //     // self.set_team(random_player, Some(HQMTeam::Red));
-            //     // self.game.world.gravity = 0.000210555;
-            // }
+            1 => {
+                // let random_player = self.get_random_logged_player();
+                // self.set_team(random_player, Some(HQMTeam::Red));
+                // self.game.world.gravity = 0.000210555;
+            }
             // 2 => {
             //     let random_player = self.get_random_logged_player();
             //     self.set_team(random_player, Some(HQMTeam::Red));
@@ -1329,6 +1391,12 @@ impl HQMServer {
                 let best = Self::get_mini_game_best_result();
                 mini_game_name = format!("Shoots - best result by {}", best);
                 mini_game_description = String::from("Score 8 goals in less time");
+            }
+            1 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_gk_mini_game_best_result();
+                mini_game_name = format!("Goal defender - best result by {}", best);
+                mini_game_description = String::from("Catch more pucks");
             }
             // 1 => {
             //     self.game.mini_game_warmup = 500;
