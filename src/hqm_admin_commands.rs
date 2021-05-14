@@ -931,6 +931,7 @@ impl HQMServer {
                 self.game.ranked_started = true;
                 self.game.time = 2000;
                 self.game.paused = false;
+                self.game.world.gravity = 0.000680555;
                 let sum = self.randomize_players();
                 self.force_players_off_ice_by_system();
                 self.set_teams_by_server(sum);
