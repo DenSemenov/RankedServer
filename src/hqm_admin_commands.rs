@@ -1085,6 +1085,22 @@ impl HQMServer {
         conn.execute(&str_sql, &[]).unwrap();
     }
 
+    pub fn save_air_mini_game_result(name: &String, result: String) {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "insert into public.\"AirMiniGamesStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"AirMiniGamesStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
+            name,
+            result
+        );
+
+        conn.execute(&str_sql, &[]).unwrap();
+    }
+
     pub fn save_gk_mini_game_result(name: &String, result: String) {
         let conn = Connection::connect(
             "postgresql://test:test@89.223.89.237:5432/rhqm",
@@ -1094,6 +1110,22 @@ impl HQMServer {
 
         let str_sql = format!(
             "insert into public.\"GkMiniGameStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"GkMiniGameStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
+            name,
+            result
+        );
+
+        conn.execute(&str_sql, &[]).unwrap();
+    }
+
+    pub fn save_catch_mini_game_result(name: &String, result: String) {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "insert into public.\"CatchMiniGameStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"CatchMiniGameStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
             name,
             result
         );
@@ -1181,6 +1213,50 @@ impl HQMServer {
 
         let str_sql = format!(
             "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"GkMiniGameStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
+        }
+
+        return player;
+    }
+
+    pub fn get_catch_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"CatchMiniGameStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
+        }
+
+        return player;
+    }
+
+    pub fn get_air_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"AirMiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
         );
 
         let mut player = String::from("");
@@ -1360,24 +1436,13 @@ impl HQMServer {
         self.new_world();
         self.config.spawn_point = HQMSpawnPoint::Center;
         self.game.world.gravity = 0.000680555;
+        self.game.wait_for_end = false;
 
         match self.game.last_mini_game {
-            0 => {
-                // let random_player = self.get_random_logged_player();
-                // self.set_team(random_player, Some(HQMTeam::Red));
-                // self.render_pucks(8);
-            }
-            1 => {
-                // let random_player = self.get_random_logged_player();
-                // self.set_team(random_player, Some(HQMTeam::Red));
-                // self.game.world.gravity = 0.000210555;
-            }
-            // 2 => {
-            //     let random_player = self.get_random_logged_player();
-            //     self.set_team(random_player, Some(HQMTeam::Red));
-            //     self.game.world.gravity = 0.000680555;
-            //     self.render_pucks(1);
-            // }
+            0 => {}
+            1 => {}
+            2 => {}
+            3 => {}
             _ => {}
         }
     }
@@ -1397,6 +1462,18 @@ impl HQMServer {
                 let best = Self::get_gk_mini_game_best_result();
                 mini_game_name = format!("Goal defender - best result by {}", best);
                 mini_game_description = String::from("Catch more pucks");
+            }
+            2 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_catch_mini_game_best_result();
+                mini_game_name = format!("Air goals - best result by {}", best);
+                mini_game_description = String::from("Score more air goals");
+            }
+            3 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_air_mini_game_best_result();
+                mini_game_name = format!("Air puck - best result by {}", best);
+                mini_game_description = String::from("Don't let the puck fall more time");
             }
             // 1 => {
             //     self.game.mini_game_warmup = 500;

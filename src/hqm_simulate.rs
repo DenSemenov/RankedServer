@@ -41,7 +41,7 @@ impl HQMGameWorld {
             update_player(
                 i,
                 player,
-                self.gravity,
+                0.000680555,
                 self.limit_jump_speed,
                 &self.rink,
                 &mut collisions,
@@ -313,11 +313,11 @@ fn update_player(
     let angular_velocity_before = player.body.angular_velocity.clone_owned();
 
     player.body.pos += &player.body.linear_velocity;
-    player.body.linear_velocity[1] -= gravity;
+    player.body.linear_velocity[1] -= 0.000680555;
     for collision_ball in player.collision_balls.iter_mut() {
         collision_ball.velocity *= 0.999;
         collision_ball.pos += &collision_ball.velocity;
-        collision_ball.velocity[1] -= gravity;
+        collision_ball.velocity[1] -= 0.000680555;
     }
     let feet_pos = &player.body.pos - (&player.body.rot * Vector3::y().scale(player.height));
     if feet_pos[1] < 0.0 {

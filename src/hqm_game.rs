@@ -184,11 +184,15 @@ pub(crate) struct HQMGame {
     pub(crate) gk_last_height: usize,
     pub(crate) gk_puck_in_net: bool,
 
+    pub(crate) catcher_vectors: Vec<f32>,
+
     pub(crate) last_random_index: usize,
 
     pub(crate) last_mini_game: usize,
     pub(crate) last_mini_game_changed: bool,
     pub(crate) force_intermission: bool,
+
+    pub(crate) wait_for_end: bool,
 }
 
 impl HQMGame {
@@ -274,11 +278,13 @@ impl HQMGame {
             gk_heights: vec![0.1, 0.5, 0.7, 0.3, 0.9],
             gk_last_vector: 2,
             gk_last_height: 2,
+            catcher_vectors: vec![7.0, 10.0, 11.0, 10.0, 8.0],
             gk_puck_in_net: false,
             last_random_index: 0,
-            last_mini_game: 1,
+            last_mini_game: 2,
             last_mini_game_changed: true,
             force_intermission: false,
+            wait_for_end: false,
         }
     }
 
