@@ -169,30 +169,7 @@ pub(crate) struct HQMGame {
     pub(crate) shootout_number: usize,
     pub(crate) data_saved: bool,
     pub(crate) active: bool,
-
-    pub(crate) mini_game_time: usize,
-    pub(crate) mini_game_warmup: usize,
-    pub(crate) pucks_in_net: Vec<usize>,
-    pub(crate) next_game_player_index: usize,
-    pub(crate) next_game_player: String,
-
-    pub(crate) gk_catches: usize,
-    pub(crate) gk_speed: f32,
-    pub(crate) gk_vectors: Vec<f32>,
-    pub(crate) gk_last_vector: usize,
-    pub(crate) gk_heights: Vec<f32>,
-    pub(crate) gk_last_height: usize,
-    pub(crate) gk_puck_in_net: bool,
-
-    pub(crate) catcher_vectors: Vec<f32>,
-
-    pub(crate) last_random_index: usize,
-
-    pub(crate) last_mini_game: usize,
-    pub(crate) last_mini_game_changed: bool,
-    pub(crate) force_intermission: bool,
-
-    pub(crate) wait_for_end: bool,
+    pub(crate) need_to_send: bool,
 }
 
 impl HQMGame {
@@ -243,7 +220,7 @@ impl HQMGame {
             logged_players: Vec::new(),
             logged_players_for_next: Vec::new(),
             ranked_started: false,
-            ranked_count: 8,
+            ranked_count: 4,
             game_players: Vec::new(),
             shootout_red: 0,
             shootout_blue: 0,
@@ -267,49 +244,28 @@ impl HQMGame {
             ],
             shootout_number: 0,
             data_saved: false,
-            mini_game_time: 0,
-            mini_game_warmup: 0,
-            pucks_in_net: vec![],
-            next_game_player_index: 0,
-            next_game_player: String::from(""),
-            gk_catches: 0,
-            gk_speed: 0.3,
-            gk_vectors: vec![0.015, 0.01, 0.0, -0.01, -0.015],
-            gk_heights: vec![0.1, 0.5, 0.7, 0.3, 0.9],
-            gk_last_vector: 2,
-            gk_last_height: 2,
-            catcher_vectors: vec![7.0, 10.0, 11.0, 10.0, 8.0],
-            gk_puck_in_net: false,
-            last_random_index: 0,
-            last_mini_game: 2,
-            last_mini_game_changed: true,
-            force_intermission: false,
-            wait_for_end: false,
+            need_to_send: false,
         }
     }
 
     pub(crate) fn update_game_state(&mut self) {
-        if self.force_intermission {
-            self.state = HQMGameState::Intermission
-        } else {
-            self.state = if !self.paused {
-                if self.game_over {
-                    HQMGameState::GameOver
-                } else if self.time_break > 0 {
-                    if self.is_intermission_goal {
-                        HQMGameState::GoalScored
-                    } else {
-                        HQMGameState::Intermission
-                    }
-                } else if self.period == 0 {
-                    HQMGameState::Warmup
+        self.state = if !self.paused {
+            if self.game_over {
+                HQMGameState::GameOver
+            } else if self.time_break > 0 {
+                if self.is_intermission_goal {
+                    HQMGameState::GoalScored
                 } else {
-                    HQMGameState::Game
+                    HQMGameState::Intermission
                 }
+            } else if self.period == 0 {
+                HQMGameState::Warmup
             } else {
-                HQMGameState::Paused
-            };
-        }
+                HQMGameState::Game
+            }
+        } else {
+            HQMGameState::Paused
+        };
     }
 }
 
@@ -1747,7 +1703,7 @@ pub(crate) struct RHQMPlayer {
 pub(crate) struct RHQMGamePlayer {
     pub player_name_r: String,
     pub player_i_r: usize,
-    pub player_points: usize,
+    pub player_points: isize,
     pub player_team: usize,
     pub goals: usize,
     pub assists: usize,

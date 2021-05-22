@@ -7,7 +7,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use crate::hqm_game::{
     HQMGame, HQMGameObject, HQMGameState, HQMGameWorld, HQMIcingStatus, HQMMessage,
     HQMOffsideStatus, HQMPlayerInput, HQMPuck, HQMRink, HQMRulesState, HQMSkaterHand, HQMTeam,
-    RHQMGamePlayer, RHQMPlayer,
+    RHQMGamePlayer,
 };
 use crate::hqm_parse::{HQMMessageReader, HQMMessageWriter, HQMObjectPacket};
 use crate::hqm_simulate::HQMSimulationEvent;
@@ -235,6 +235,25 @@ impl HQMServer {
                     );
                     let msg = format!("{} joined", name);
                     self.add_server_chat_message(msg);
+
+                    if self.game.ranked_started {
+                        let mut logged = false;
+                        let mut team = Some(HQMTeam::Red);
+
+                        for player_item in self.game.game_players.iter() {
+                            if name == player_item.player_name_r {
+                                logged = true;
+
+                                if player_item.player_team == 1 {
+                                    team = Some(HQMTeam::Blue);
+                                }
+                            }
+                        }
+
+                        if logged {
+                            self.set_team(player_index, team);
+                        }
+                    }
                 }
             }
             _ => {}
@@ -268,12 +287,6 @@ impl HQMServer {
             }
             "l" => {
                 self.login(player_index, arg);
-            }
-            "afk" => {
-                self.afk(player_index);
-            }
-            "here" => {
-                self.here(player_index);
             }
             "enablejoin" => {
                 self.set_allow_join(player_index, true);
@@ -1248,6 +1261,22 @@ impl HQMServer {
                                 self.game.ranked_count,
                             ));
                         }
+
+                        if self.game.need_to_send {
+                            self.game.need_to_send = false;
+
+                            let mut players = String::from("");
+
+                            for player in self.game.logged_players.iter() {
+                                if players.len() == 0 {
+                                    players = format!("{}", player.player_name);
+                                } else {
+                                    players = format!("{},{}", players, player.player_name);
+                                }
+                            }
+
+                            Self::send_notify(players);
+                        }
                     }
                 }
             } else {
@@ -2073,586 +2102,6 @@ impl HQMServer {
                         self.game.time_break = self.config.time_intermission * 100;
                         self.game.next_faceoff_spot =
                             self.game.world.rink.center_faceoff_spot.clone();
-                    }
-                }
-            }
-
-            if self.game.period == 0 && !self.game.ranked_started {
-                if self.game.logged_players.len() != 0 {
-                    if self.game.time == 1 {
-                        self.game.time = 4000;
-                        self.game.wait_for_end = true;
-                    }
-                    if self.game.time == 0 {
-                        if self.game.time_break == 700 {
-                            self.get_next_mini_game();
-                        }
-
-                        if !self.game.last_mini_game_changed {
-                            self.game.last_mini_game += 1;
-                            self.game.last_mini_game_changed = true;
-                            self.add_server_chat_message(String::from("Mini game ended"));
-                            self.game.time_break = 1000;
-                            self.game.force_intermission = true;
-                        }
-
-                        if self.game.time_break == 1 {
-                            self.game.time = 18000;
-                            self.game.paused = false;
-                            self.game.last_mini_game_changed = false;
-                            self.game.force_intermission = false;
-                        }
-                    } else {
-                        match self.game.last_mini_game {
-                            0 => {
-                                if self.game.mini_game_warmup > 0 {
-                                    if self.game.mini_game_warmup == 499 {
-                                        self.game.mini_game_time = 4000;
-                                        self.new_world();
-                                        self.force_players_off_ice_by_system();
-
-                                        self.config.spawn_point = HQMSpawnPoint::Bench;
-                                        self.game.next_game_player_index =
-                                            self.get_random_logged_player();
-
-                                        if self.game.next_game_player_index != 999 {
-                                            self.set_team(
-                                                self.game.next_game_player_index,
-                                                Some(HQMTeam::Red),
-                                            );
-
-                                            for player in self.game.logged_players.iter() {
-                                                if player.player_i
-                                                    == self.game.next_game_player_index
-                                                {
-                                                    self.game.next_game_player =
-                                                        player.player_name.to_owned();
-                                                }
-                                            }
-
-                                            self.game.pucks_in_net = vec![];
-
-                                            self.add_server_chat_message(format!(
-                                                "Next try by {}",
-                                                self.game.next_game_player
-                                            ));
-                                        }
-                                    }
-                                    if self.game.next_game_player_index != 999 {
-                                        if self.game.mini_game_warmup % 100 == 0
-                                            && self.game.mini_game_warmup < 400
-                                        {
-                                            self.add_directed_server_chat_message(
-                                                format!("{}", self.game.mini_game_warmup / 100),
-                                                self.game.next_game_player_index,
-                                            );
-                                        }
-                                    }
-                                    self.game.mini_game_warmup -= 1;
-                                } else {
-                                    if self.game.mini_game_time > 0 {
-                                        if self.game.mini_game_time == 4000 {
-                                            self.render_pucks(9);
-                                        }
-
-                                        let mut pucks = vec![];
-
-                                        for object in &mut self.game.world.objects.iter() {
-                                            if let HQMGameObject::Puck(puck) = object {
-                                                pucks.push(puck.clone());
-                                            }
-                                        }
-
-                                        for puck in pucks.iter() {
-                                            let mut exist = false;
-                                            for ind in self.game.pucks_in_net.iter() {
-                                                if ind == &puck.index {
-                                                    exist = true;
-                                                }
-                                            }
-
-                                            if !exist {
-                                                let result = self.check_puck_in_net(puck);
-                                                if result == 1 {
-                                                    self.game.world.objects[puck.index] =
-                                                        HQMGameObject::None;
-
-                                                    self.game.pucks_in_net.push(puck.index);
-
-                                                    if self.game.pucks_in_net.len() > 6 {
-                                                        self.add_server_chat_message(format!(
-                                                            "Puck in net [{}/8] ({}.{})",
-                                                            self.game.pucks_in_net.len(),
-                                                            (4000 - self.game.mini_game_time) / 100,
-                                                            (4000 - self.game.mini_game_time) % 100
-                                                        ));
-                                                    } else {
-                                                        self.add_directed_server_chat_message(
-                                                            format!(
-                                                                "Puck in net [{}/8] ({}.{})",
-                                                                self.game.pucks_in_net.len(),
-                                                                (4000 - self.game.mini_game_time)
-                                                                    / 100,
-                                                                (4000 - self.game.mini_game_time)
-                                                                    % 100
-                                                            ),
-                                                            self.game.next_game_player_index,
-                                                        );
-                                                    }
-
-                                                    if self.game.pucks_in_net.len() == 8 {
-                                                        let result = format!(
-                                                            "{}.{}",
-                                                            (4000 - self.game.mini_game_time) / 100,
-                                                            (4000 - self.game.mini_game_time) % 100
-                                                        );
-
-                                                        Self::save_mini_game_result(
-                                                            &self.game.next_game_player,
-                                                            result,
-                                                        );
-
-                                                        self.add_server_chat_message(format!(
-                                                            "Result saved"
-                                                        ));
-
-                                                        if self.game.wait_for_end {
-                                                            self.game.time = 0;
-                                                        }
-
-                                                        self.game.mini_game_time = 300;
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        self.game.mini_game_time -= 1;
-                                    } else {
-                                        if self.game.wait_for_end {
-                                            self.game.time = 0;
-                                        }
-                                        self.game.mini_game_warmup = 500;
-                                    }
-                                }
-                            }
-                            1 => {
-                                if self.game.mini_game_warmup > 0 {
-                                    if self.game.mini_game_warmup == 499 {
-                                        self.game.mini_game_time = 30000;
-                                        self.new_world();
-                                        self.force_players_off_ice_by_system();
-
-                                        self.config.spawn_point = HQMSpawnPoint::Center;
-                                        self.game.next_game_player_index =
-                                            self.get_random_logged_player();
-
-                                        if self.game.next_game_player_index != 999 {
-                                            self.set_team_with_position(
-                                                self.game.next_game_player_index,
-                                                Some(HQMTeam::Blue),
-                                            );
-
-                                            for player in self.game.logged_players.iter() {
-                                                if player.player_i
-                                                    == self.game.next_game_player_index
-                                                {
-                                                    self.game.next_game_player =
-                                                        player.player_name.to_owned();
-                                                }
-                                            }
-
-                                            self.game.gk_catches = 0;
-                                            self.game.gk_last_height = 2;
-                                            self.game.gk_last_vector = 2;
-                                            self.game.gk_speed = 0.3;
-                                            self.game.gk_puck_in_net = false;
-
-                                            self.add_server_chat_message(format!(
-                                                "Next try by {}",
-                                                self.game.next_game_player
-                                            ));
-                                        }
-                                    }
-                                    if self.game.next_game_player_index != 999 {
-                                        if self.game.mini_game_warmup % 100 == 0
-                                            && self.game.mini_game_warmup < 400
-                                        {
-                                            self.add_directed_server_chat_message(
-                                                format!("{}", self.game.mini_game_warmup / 100),
-                                                self.game.next_game_player_index,
-                                            );
-                                        }
-                                    }
-                                    self.game.mini_game_warmup -= 1;
-                                } else {
-                                    if self.game.mini_game_time > 0 {
-                                        if self.game.mini_game_time % 200 == 0
-                                            && self.game.gk_puck_in_net == false
-                                        {
-                                            self.render_pucks(1);
-                                            for object in self.game.world.objects.iter_mut() {
-                                                if let HQMGameObject::Puck(puck) = object {
-                                                    puck.body.pos = Point3::new(
-                                                        self.game.world.rink.width / 2.0,
-                                                        self.game.gk_heights
-                                                            [self.game.gk_last_height],
-                                                        self.game.world.rink.length / 2.0,
-                                                    );
-
-                                                    let mut x_vec = 0.0;
-
-                                                    if self.game.gk_vectors
-                                                        [self.game.gk_last_vector]
-                                                        != 0.0
-                                                    {
-                                                        x_vec = self.game.gk_vectors
-                                                            [self.game.gk_last_vector]
-                                                            + (self.game.gk_speed - 0.3) / 100.0;
-                                                    } else {
-                                                        x_vec = self.game.gk_vectors
-                                                            [self.game.gk_last_vector];
-                                                    }
-
-                                                    puck.body.linear_velocity = Vector3::new(
-                                                        x_vec,
-                                                        0.0,
-                                                        -1.0 * self.game.gk_speed,
-                                                    );
-
-                                                    self.game.gk_last_vector += 1;
-
-                                                    if self.game.gk_last_vector == 5 {
-                                                        self.game.gk_last_vector = 0;
-                                                    }
-
-                                                    self.game.gk_last_height += 1;
-
-                                                    if self.game.gk_last_height == 5 {
-                                                        self.game.gk_last_height = 0;
-                                                    }
-                                                }
-                                            }
-
-                                            if self.game.gk_catches != 0
-                                                && self.game.gk_catches % 5 == 0
-                                            {
-                                                self.add_server_chat_message(format!(
-                                                    "{} pucks catched",
-                                                    self.game.gk_catches
-                                                ));
-                                            }
-
-                                            self.game.gk_catches += 1;
-                                            self.game.gk_speed += 0.02;
-                                        }
-
-                                        let mut pucks = vec![];
-
-                                        for object in &mut self.game.world.objects.iter() {
-                                            if let HQMGameObject::Puck(puck) = object {
-                                                pucks.push(puck.clone());
-                                            }
-                                        }
-
-                                        for puck in pucks.iter() {
-                                            let result = self.check_puck_in_net(puck);
-                                            if result == 1 {
-                                                self.game.gk_puck_in_net = true;
-                                                self.game.world.objects[puck.index] =
-                                                    HQMGameObject::None;
-
-                                                Self::save_gk_mini_game_result(
-                                                    &self.game.next_game_player,
-                                                    (self.game.gk_catches - 1).to_string(),
-                                                );
-
-                                                self.add_server_chat_message(format!(
-                                                    "{} pucks catched, result saved",
-                                                    (self.game.gk_catches - 1)
-                                                ));
-
-                                                if self.game.wait_for_end {
-                                                    self.game.time = 0;
-                                                }
-
-                                                self.game.mini_game_time = 301;
-                                            }
-                                        }
-
-                                        self.game.mini_game_time -= 1;
-                                    } else {
-                                        self.game.mini_game_warmup = 500;
-                                    }
-                                }
-                            }
-                            2 => {
-                                if self.game.mini_game_warmup > 0 {
-                                    if self.game.mini_game_warmup == 499 {
-                                        self.game.mini_game_time = 30000;
-                                        self.new_world();
-                                        self.force_players_off_ice_by_system();
-                                        self.game.world.gravity = 0.000030555;
-                                        self.config.spawn_point = HQMSpawnPoint::Center;
-                                        self.game.next_game_player_index =
-                                            self.get_random_logged_player();
-
-                                        if self.game.next_game_player_index != 999 {
-                                            self.set_team_with_position(
-                                                self.game.next_game_player_index,
-                                                Some(HQMTeam::Blue),
-                                            );
-
-                                            for player in self.game.logged_players.iter() {
-                                                if player.player_i
-                                                    == self.game.next_game_player_index
-                                                {
-                                                    self.game.next_game_player =
-                                                        player.player_name.to_owned();
-                                                }
-                                            }
-
-                                            self.game.gk_catches = 0;
-                                            self.game.gk_last_height = 3;
-                                            self.game.gk_last_vector = 2;
-                                            self.game.gk_speed = 0.3;
-                                            self.game.gk_puck_in_net = true;
-
-                                            self.add_server_chat_message(format!(
-                                                "Next try by {}",
-                                                self.game.next_game_player
-                                            ));
-                                        }
-                                    }
-                                    if self.game.next_game_player_index != 999 {
-                                        if self.game.mini_game_warmup % 100 == 0
-                                            && self.game.mini_game_warmup < 400
-                                        {
-                                            self.add_directed_server_chat_message(
-                                                format!("{}", self.game.mini_game_warmup / 100),
-                                                self.game.next_game_player_index,
-                                            );
-                                        }
-                                    }
-                                    self.game.mini_game_warmup -= 1;
-                                } else {
-                                    if self.game.mini_game_time > 0 {
-                                        if self.game.mini_game_time % 400 == 0 {
-                                            if self.game.gk_puck_in_net == true {
-                                                self.game.gk_puck_in_net = false;
-                                                self.render_pucks(1);
-                                                for object in self.game.world.objects.iter_mut() {
-                                                    if let HQMGameObject::Puck(puck) = object {
-                                                        let mut dem = 0.0;
-                                                        if self.game.gk_catches % 2 == 0 {
-                                                            dem = 2.0;
-                                                        } else {
-                                                            dem = -2.0;
-                                                        }
-
-                                                        puck.body.pos = Point3::new(
-                                                            self.game.world.rink.width / 2.0 + dem,
-                                                            1.0 + (self.game.world.gravity
-                                                                - 0.000030555)
-                                                                * 10000.0,
-                                                            self.game.world.rink.length - 10.0,
-                                                        );
-
-                                                        let mut x_vec = 0.0;
-
-                                                        puck.body.linear_velocity = Vector3::new(
-                                                            x_vec,
-                                                            0.0,
-                                                            -1.0 * self.game.gk_speed,
-                                                        );
-
-                                                        self.game.gk_last_vector += 1;
-
-                                                        if self.game.gk_last_vector == 5 {
-                                                            self.game.gk_last_vector = 0;
-                                                        }
-
-                                                        self.game.world.gravity += 0.00001;
-                                                    }
-                                                }
-
-                                                self.game.gk_catches += 1;
-                                            } else {
-                                                if self.game.gk_catches - 1 != 0 {
-                                                    Self::save_catch_mini_game_result(
-                                                        &self.game.next_game_player,
-                                                        (self.game.gk_catches - 1).to_string(),
-                                                    );
-
-                                                    self.add_server_chat_message(format!(
-                                                        "{} goals, result saved",
-                                                        (self.game.gk_catches - 1)
-                                                    ));
-                                                }
-
-                                                if self.game.wait_for_end {
-                                                    self.game.time = 0;
-                                                }
-
-                                                self.game.mini_game_time = 301;
-                                            }
-                                        }
-
-                                        let mut pucks = vec![];
-
-                                        for object in &mut self.game.world.objects.iter() {
-                                            if let HQMGameObject::Puck(puck) = object {
-                                                pucks.push(puck.clone());
-                                            }
-                                        }
-
-                                        for puck in pucks.iter() {
-                                            let result = self.check_puck_in_net(puck);
-                                            if result == 1 {
-                                                self.game.gk_puck_in_net = true;
-                                                if self.game.gk_catches > 1 {
-                                                    self.add_server_chat_message(format!(
-                                                        "{} goals",
-                                                        self.game.gk_catches
-                                                    ));
-                                                }
-
-                                                self.game.world.objects[puck.index] =
-                                                    HQMGameObject::None;
-                                            }
-                                        }
-
-                                        self.game.mini_game_time -= 1;
-                                    } else {
-                                        self.game.mini_game_warmup = 500;
-                                    }
-                                }
-                            }
-                            3 => {
-                                if self.game.mini_game_warmup > 0 {
-                                    if self.game.mini_game_warmup == 499 {
-                                        self.game.mini_game_time = 30000;
-                                        self.new_world();
-                                        self.force_players_off_ice_by_system();
-                                        self.game.world.gravity = 0.000130555;
-                                        self.config.spawn_point = HQMSpawnPoint::Center;
-                                        self.game.next_game_player_index =
-                                            self.get_random_logged_player();
-
-                                        if self.game.next_game_player_index != 999 {
-                                            self.set_team(
-                                                self.game.next_game_player_index,
-                                                Some(HQMTeam::Blue),
-                                            );
-
-                                            for player in self.game.logged_players.iter() {
-                                                if player.player_i
-                                                    == self.game.next_game_player_index
-                                                {
-                                                    self.game.next_game_player =
-                                                        player.player_name.to_owned();
-                                                }
-                                            }
-
-                                            self.add_server_chat_message(format!(
-                                                "Next try by {}",
-                                                self.game.next_game_player
-                                            ));
-                                        }
-                                    }
-                                    if self.game.next_game_player_index != 999 {
-                                        if self.game.mini_game_warmup % 100 == 0
-                                            && self.game.mini_game_warmup < 400
-                                        {
-                                            self.add_directed_server_chat_message(
-                                                format!("{}", self.game.mini_game_warmup / 100),
-                                                self.game.next_game_player_index,
-                                            );
-                                        }
-                                    }
-                                    self.game.mini_game_warmup -= 1;
-                                } else {
-                                    if self.game.mini_game_time > 0 {
-                                        if self.game.mini_game_time == 30000 {
-                                            self.render_pucks(1);
-                                            for object in self.game.world.objects.iter_mut() {
-                                                if let HQMGameObject::Puck(puck) = object {
-                                                    puck.body.pos = Point3::new(
-                                                        self.game.world.rink.width / 2.0,
-                                                        2.0,
-                                                        self.game.world.rink.length / 2.0,
-                                                    );
-                                                }
-                                            }
-                                        }
-                                        let mut pucks = vec![];
-
-                                        for object in &mut self.game.world.objects.iter() {
-                                            if let HQMGameObject::Puck(puck) = object {
-                                                pucks.push(puck.clone());
-                                            }
-                                        }
-
-                                        for puck in pucks.iter() {
-                                            let result = self.check_puck_touched_ice(puck);
-                                            if result == 1 {
-                                                self.game.world.objects[puck.index] =
-                                                    HQMGameObject::None;
-
-                                                let result = format!(
-                                                    "{}.{}",
-                                                    (30000 - self.game.mini_game_time) / 100,
-                                                    (30000 - self.game.mini_game_time) % 100
-                                                );
-
-                                                self.add_server_chat_message(format!(
-                                                    "Puck was on air {}, result saved",
-                                                    result.to_string()
-                                                ));
-
-                                                Self::save_air_mini_game_result(
-                                                    &self.game.next_game_player,
-                                                    result,
-                                                );
-
-                                                if self.game.wait_for_end {
-                                                    self.game.time = 0;
-                                                }
-
-                                                self.game.mini_game_time = 300;
-                                            }
-                                        }
-
-                                        if self.game.world.gravity != 0.000680555 {
-                                            self.game.world.gravity += 0.0000001;
-                                        }
-
-                                        if self.game.mini_game_time % 500 == 0 {
-                                            let result = format!(
-                                                "{}.{}",
-                                                (30000 - self.game.mini_game_time) / 100,
-                                                (30000 - self.game.mini_game_time) % 100
-                                            );
-
-                                            if (30000 - self.game.mini_game_time) / 100 != 0 {
-                                                self.add_server_chat_message(format!(
-                                                    "Puck on air {}",
-                                                    result.to_string()
-                                                ));
-                                            }
-                                        }
-
-                                        self.game.mini_game_time -= 1;
-                                    } else {
-                                        self.game.mini_game_warmup = 500;
-                                    }
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-
-                    if self.game.time == 18000 {
-                        self.init_mini_game();
                     }
                 }
             }
