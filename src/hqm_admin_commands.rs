@@ -948,6 +948,15 @@ impl HQMServer {
                 let sum = self.randomize_players();
                 self.force_players_off_ice_by_system();
                 self.set_teams_by_server(sum);
+            } else {
+                let mut player_index = 0;
+
+                for player_item in self.game.game_players.iter() {
+                    if user == player_item.player_name_r {
+                        player_index = player_item.player_i_r;
+                    }
+                }
+                self.set_team(player_index, Some(HQMTeam::Red));
             }
         } else {
             let msg = format!(
