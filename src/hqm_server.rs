@@ -1247,20 +1247,20 @@ impl HQMServer {
 
                         self.send_directed_sign_up_messages();
 
-                        if self.game.logged_players.len() > 0 {
-                            self.add_server_chat_message(format!(
-                                "Logged in {}/{} ({})",
-                                self.game.logged_players.len().to_string(),
-                                self.game.ranked_count,
-                                joined
-                            ));
-                        } else {
-                            self.add_server_chat_message(format!(
-                                "Logged in {}/{}",
-                                self.game.logged_players.len().to_string(),
-                                self.game.ranked_count,
-                            ));
-                        }
+                        // if self.game.logged_players.len() > 0 {
+                        //     self.add_server_chat_message(format!(
+                        //         "Logged in {}/{} ({})",
+                        //         self.game.logged_players.len().to_string(),
+                        //         self.game.ranked_count,
+                        //         joined
+                        //     ));
+                        // } else {
+                        //     self.add_server_chat_message(format!(
+                        //         "Logged in {}/{}",
+                        //         self.game.logged_players.len().to_string(),
+                        //         self.game.ranked_count,
+                        //     ));
+                        // }
 
                         if self.game.need_to_send {
                             self.game.need_to_send = false;
