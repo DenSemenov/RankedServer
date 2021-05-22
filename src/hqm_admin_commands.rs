@@ -951,9 +951,9 @@ impl HQMServer {
             } else {
                 let mut player_index = 0;
 
-                for player_item in self.game.game_players.iter() {
-                    if user == player_item.player_name_r {
-                        player_index = player_item.player_i_r;
+                for player_item in self.game.logged_players.iter() {
+                    if user == player_item.player_name {
+                        player_index = player_item.player_i;
                     }
                 }
                 self.set_team(player_index, Some(HQMTeam::Red));
