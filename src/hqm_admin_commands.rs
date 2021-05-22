@@ -934,6 +934,17 @@ impl HQMServer {
                 self.game.time = 2000;
                 self.game.paused = false;
                 self.game.world.gravity = 0.000680555;
+                let mut players = String::from("");
+
+                for player in self.game.logged_players.iter() {
+                    if players.len() == 0 {
+                        players = format!("{}", player.player_name);
+                    } else {
+                        players = format!("{},{}", players, player.player_name);
+                    }
+                }
+
+                Self::send_notify(players);
                 let sum = self.randomize_players();
                 self.force_players_off_ice_by_system();
                 self.set_teams_by_server(sum);
