@@ -170,6 +170,8 @@ pub(crate) struct HQMGame {
     pub(crate) data_saved: bool,
     pub(crate) active: bool,
     pub(crate) need_to_send: bool,
+    pub(crate) last_red_gk: usize,
+    pub(crate) last_blue_gk: usize,
 }
 
 impl HQMGame {
@@ -209,7 +211,7 @@ impl HQMGame {
             period: 0,
             time: 30000,
             is_intermission_goal: false,
-            time_break: 1000,
+            time_break: 0,
             paused: true,
 
             game_over: false,
@@ -232,10 +234,8 @@ impl HQMGame {
                 String::from("-"),
                 String::from("-"),
                 String::from("-"),
-                String::from("-"),
             ],
             shootout_blue_score: vec![
-                String::from("-"),
                 String::from("-"),
                 String::from("-"),
                 String::from("-"),
@@ -245,6 +245,8 @@ impl HQMGame {
             shootout_number: 0,
             data_saved: false,
             need_to_send: false,
+            last_red_gk: 999,
+            last_blue_gk: 999,
         }
     }
 

@@ -744,6 +744,31 @@ impl HQMServer {
         }
     }
 
+    pub(crate) fn get_ping(
+        players: &Vec<Option<HQMConnectedPlayer>>,
+        ping_player_index: usize,
+    ) -> usize {
+        let mut avg_ping = 0;
+        if ping_player_index < players.len() {
+            if let Some(ping_player) = &players[ping_player_index] {
+                let n = ping_player.last_ping.len() as f32;
+                let mut min = f32::INFINITY;
+                let mut max = f32::NEG_INFINITY;
+                let mut sum = 0f32;
+                for i in ping_player.last_ping.iter() {
+                    min = min.min(*i);
+                    max = max.max(*i);
+                    sum += *i;
+                }
+                let avg = sum / n;
+
+                avg_ping = avg as usize;
+            }
+        }
+
+        return avg_ping;
+    }
+
     pub(crate) fn player_exact_unique_match(&self, name: &str) -> Option<(usize, String)> {
         let mut found = None;
         for (player_index, player) in self.players.iter().enumerate() {
@@ -859,7 +884,9 @@ impl HQMServer {
                         let secs = leaved_seconds % 60;
                         let minutes = (leaved_seconds - secs) / 60;
                         let msg = format!("{} have {}m {}s to rejoin", player_name, minutes, secs);
-                        self.add_server_chat_message(msg);
+                        if !self.game.game_over {
+                            self.add_server_chat_message(msg);
+                        }
                     }
                 }
             }
@@ -1302,7 +1329,7 @@ impl HQMServer {
                             self.game.shootout_randomized = false;
 
                             if self.game.shoutout_red_start {
-                                if self.game.shootout_number >= 5 {
+                                if self.game.shootout_number >= 4 {
                                     let mut red_score = 0;
                                     let mut blue_score = 0;
 
@@ -1319,176 +1346,212 @@ impl HQMServer {
                                     }
 
                                     if red_score != blue_score {
+                                        if red_score > blue_score {
+                                            self.game.red_score += 1;
+                                        } else {
+                                            self.game.blue_score += 1;
+                                        }
                                         self.game.game_over = true;
                                     }
                                 }
                             }
                         }
                         if self.game.time_break > 1500 && self.game.time_break < 1700 {
-                            if self.game.shootout_randomized == false {
-                                self.config.team_max = 1;
-                                self.force_players_off_ice_by_system();
+                            if !self.game.game_over {
+                                if self.game.shootout_randomized == false {
+                                    self.config.team_max = 1;
+                                    self.force_players_off_ice_by_system();
 
-                                let mut red_stat = String::from("").to_owned();
-                                let mut blue_stat = String::from("").to_owned();
+                                    let mut red_stat = String::from("").to_owned();
+                                    let mut blue_stat = String::from("").to_owned();
 
-                                let mut stat_index = 0;
-                                for i in self.game.shootout_red_score.iter() {
-                                    if stat_index < 5 || self.game.shootout_number == 5 {
-                                        let mut pre = String::from("");
-                                        if self.game.shootout_number == 5 && stat_index == 5 {
-                                            pre = String::from(" I ");
+                                    let mut stat_index = 0;
+                                    for i in self.game.shootout_red_score.iter() {
+                                        if stat_index < 4 || self.game.shootout_number == 4 {
+                                            let mut pre = String::from("");
+                                            if self.game.shootout_number == 4 && stat_index == 4 {
+                                                pre = String::from(" I ");
+                                            }
+                                            if stat_index == self.game.shootout_number
+                                                && self.game.shoutout_red_start
+                                            {
+                                                red_stat = format!(
+                                                    "{}{}{} ",
+                                                    red_stat,
+                                                    pre,
+                                                    String::from("N")
+                                                );
+                                            } else {
+                                                red_stat = format!("{}{}{} ", red_stat, pre, i);
+                                            }
                                         }
-                                        if stat_index == self.game.shootout_number
-                                            && self.game.shoutout_red_start
+                                        stat_index += 1;
+                                    }
+
+                                    stat_index = 0;
+                                    for i in self.game.shootout_blue_score.iter() {
+                                        if stat_index < 4 || self.game.shootout_number == 4 {
+                                            let mut pre = String::from("");
+                                            if self.game.shootout_number == 4 && stat_index == 4 {
+                                                pre = String::from(" I ");
+                                            }
+                                            if stat_index == self.game.shootout_number
+                                                && !self.game.shoutout_red_start
+                                            {
+                                                blue_stat = format!(
+                                                    "{}{}{} ",
+                                                    blue_stat,
+                                                    pre,
+                                                    String::from("N")
+                                                );
+                                            } else {
+                                                blue_stat = format!("{}{}{} ", blue_stat, pre, i);
+                                            }
+                                        }
+                                        stat_index += 1;
+                                    }
+
+                                    self.add_server_chat_message(format!("RED {}", red_stat));
+                                    self.add_server_chat_message(format!("BLU {}", blue_stat));
+
+                                    if self.game.shoutout_red_start {
+                                        let mut found_index_red = 0;
+                                        let mut found_index_blue = 0;
+
+                                        let red_index =
+                                            self.game.shootout_red % self.game.ranked_count;
+
+                                        let blue_index =
+                                            self.game.shootout_blue % self.game.ranked_count;
+
+                                        let mut red_att = 0;
+                                        let mut blue_gk = 1;
+
+                                        let mut red_name = String::from("");
+                                        let mut blue_name = String::from("");
+
+                                        for i in self.game.game_players.iter() {
+                                            if i.player_team == 0 {
+                                                if found_index_red == red_index {
+                                                    red_att = i.player_i_r;
+                                                    red_name = i.player_name_r.to_string();
+                                                }
+                                                found_index_red += 1;
+                                            } else {
+                                                if self.game.last_blue_gk == 999 {
+                                                    if found_index_blue == blue_index {
+                                                        blue_gk = i.player_i_r;
+                                                        blue_name = i.player_name_r.to_string();
+                                                        self.game.last_blue_gk = i.player_i_r;
+                                                    }
+                                                } else {
+                                                    if i.player_i_r == self.game.last_blue_gk {
+                                                        blue_gk = i.player_i_r;
+                                                        blue_name = i.player_name_r.to_string();
+                                                    }
+                                                }
+                                                found_index_blue += 1;
+                                            }
+                                        }
+
+                                        self.add_server_chat_message(format!(
+                                            "{} vs {}(GK)",
+                                            red_name, blue_name,
+                                        ));
+
+                                        self.game.world.rink =
+                                            HQMRink::new_red_shootout(30.0, 61.0, 8.5);
+
+                                        self.set_team(red_att, Some(HQMTeam::Red));
+                                        self.set_team(blue_gk, Some(HQMTeam::Blue));
+
+                                        self.set_preferred_faceoff_position_by_system(red_att, "C");
+                                        self.set_preferred_faceoff_position_by_system(blue_gk, "G");
+
+                                        self.game.shoutout_red_start = false;
+
+                                        if self.game.shootout_red == self.game.ranked_count / 2 - 1
                                         {
-                                            red_stat = format!(
-                                                "{}{}{} ",
-                                                red_stat,
-                                                pre,
-                                                String::from("N")
-                                            );
+                                            self.game.shootout_red = 0;
                                         } else {
-                                            red_stat = format!("{}{}{} ", red_stat, pre, i);
+                                            self.game.shootout_red += 1;
                                         }
-                                    }
-                                    stat_index += 1;
-                                }
+                                    } else {
+                                        let mut found_index_red = 0;
+                                        let mut found_index_blue = 0;
 
-                                stat_index = 0;
-                                for i in self.game.shootout_blue_score.iter() {
-                                    if stat_index < 5 || self.game.shootout_number == 5 {
-                                        let mut pre = String::from("");
-                                        if self.game.shootout_number == 5 && stat_index == 5 {
-                                            pre = String::from(" I ");
+                                        let blue_index =
+                                            self.game.shootout_blue % self.game.ranked_count;
+
+                                        let mut red_index = 0;
+
+                                        if self.game.last_blue_gk == 999 {
+                                            red_index =
+                                                self.game.shootout_red % self.game.ranked_count;
+                                        } else {
+                                            red_index = self.game.last_red_gk;
                                         }
-                                        if stat_index == self.game.shootout_number
-                                            && !self.game.shoutout_red_start
+
+                                        let mut red_att = 0;
+                                        let mut blue_gk = 1;
+
+                                        let mut red_name = String::from("");
+                                        let mut blue_name = String::from("");
+
+                                        for i in self.game.game_players.iter() {
+                                            if i.player_team == 0 {
+                                                if self.game.last_blue_gk == 999 {
+                                                    if found_index_red == blue_index {
+                                                        blue_gk = i.player_i_r;
+                                                        blue_name = i.player_name_r.to_string();
+                                                        self.game.last_red_gk = i.player_i_r;
+                                                    }
+                                                } else {
+                                                    if i.player_i_r == self.game.last_red_gk {
+                                                        red_att = i.player_i_r;
+                                                        red_name = i.player_name_r.to_string();
+                                                    }
+                                                }
+
+                                                found_index_red += 1;
+                                            } else {
+                                                if found_index_blue == blue_index {
+                                                    blue_gk = i.player_i_r;
+                                                    blue_name = i.player_name_r.to_string();
+                                                }
+                                                found_index_blue += 1;
+                                            }
+                                        }
+
+                                        self.add_server_chat_message(format!(
+                                            "{} vs {}(GK)",
+                                            blue_name, red_name,
+                                        ));
+
+                                        self.game.world.rink =
+                                            HQMRink::new_blue_shootout(30.0, 61.0, 8.5);
+
+                                        self.set_team(red_att, Some(HQMTeam::Red));
+                                        self.set_team(blue_gk, Some(HQMTeam::Blue));
+
+                                        self.set_preferred_faceoff_position_by_system(blue_gk, "C");
+                                        self.set_preferred_faceoff_position_by_system(red_att, "G");
+
+                                        self.game.shoutout_red_start = true;
+                                        if self.game.shootout_blue == self.game.ranked_count / 2 - 1
                                         {
-                                            blue_stat = format!(
-                                                "{}{}{} ",
-                                                blue_stat,
-                                                pre,
-                                                String::from("N")
-                                            );
+                                            self.game.shootout_blue = 0;
                                         } else {
-                                            blue_stat = format!("{}{}{} ", blue_stat, pre, i);
+                                            self.game.shootout_blue += 1;
+                                        }
+
+                                        if self.game.shootout_number != 4 {
+                                            self.game.shootout_number += 1;
                                         }
                                     }
-                                    stat_index += 1;
+
+                                    self.game.shootout_randomized = true;
                                 }
-
-                                self.add_server_chat_message(format!("RED {}", red_stat));
-                                self.add_server_chat_message(format!("BLU {}", blue_stat));
-
-                                if self.game.shoutout_red_start {
-                                    let mut found_index_red = 0;
-                                    let mut found_index_blue = 0;
-
-                                    let red_index = self.game.shootout_red % self.game.ranked_count;
-                                    let blue_index =
-                                        self.game.shootout_blue % self.game.ranked_count;
-
-                                    let mut red_att = 0;
-                                    let mut blue_gk = 1;
-
-                                    let mut red_name = String::from("");
-                                    let mut blue_name = String::from("");
-
-                                    for i in self.game.game_players.iter() {
-                                        if i.player_team == 0 {
-                                            if found_index_red == red_index {
-                                                red_att = i.player_i_r;
-                                                red_name = i.player_name_r.to_string();
-                                            }
-                                            found_index_red += 1;
-                                        } else {
-                                            if found_index_blue == blue_index {
-                                                blue_gk = i.player_i_r;
-                                                blue_name = i.player_name_r.to_string();
-                                            }
-                                            found_index_blue += 1;
-                                        }
-                                    }
-
-                                    self.add_server_chat_message(format!(
-                                        "{} vs {}(GK)",
-                                        red_name, blue_name,
-                                    ));
-
-                                    self.game.world.rink =
-                                        HQMRink::new_red_shootout(30.0, 61.0, 8.5);
-
-                                    self.set_team(red_att, Some(HQMTeam::Red));
-                                    self.set_team(blue_gk, Some(HQMTeam::Blue));
-
-                                    self.set_preferred_faceoff_position_by_system(red_att, "C");
-                                    self.set_preferred_faceoff_position_by_system(blue_gk, "G");
-
-                                    self.game.shoutout_red_start = false;
-
-                                    if self.game.shootout_red == self.game.ranked_count / 2 - 1 {
-                                        self.game.shootout_red = 0;
-                                    } else {
-                                        self.game.shootout_red += 1;
-                                    }
-                                } else {
-                                    let mut found_index_red = 0;
-                                    let mut found_index_blue = 0;
-
-                                    let red_index = self.game.shootout_red % self.game.ranked_count;
-                                    let blue_index =
-                                        self.game.shootout_blue % self.game.ranked_count;
-
-                                    let mut red_att = 0;
-                                    let mut blue_gk = 1;
-
-                                    let mut red_name = String::from("");
-                                    let mut blue_name = String::from("");
-
-                                    for i in self.game.game_players.iter() {
-                                        if i.player_team == 0 {
-                                            if found_index_red == red_index {
-                                                red_att = i.player_i_r;
-                                                red_name = i.player_name_r.to_string();
-                                            }
-                                            found_index_red += 1;
-                                        } else {
-                                            if found_index_blue == blue_index {
-                                                blue_gk = i.player_i_r;
-                                                blue_name = i.player_name_r.to_string();
-                                            }
-                                            found_index_blue += 1;
-                                        }
-                                    }
-
-                                    self.add_server_chat_message(format!(
-                                        "{} vs {}(GK)",
-                                        blue_name, red_name,
-                                    ));
-
-                                    self.game.world.rink =
-                                        HQMRink::new_blue_shootout(30.0, 61.0, 8.5);
-
-                                    self.set_team(red_att, Some(HQMTeam::Red));
-                                    self.set_team(blue_gk, Some(HQMTeam::Blue));
-
-                                    self.set_preferred_faceoff_position_by_system(blue_gk, "C");
-                                    self.set_preferred_faceoff_position_by_system(red_att, "G");
-
-                                    self.game.shoutout_red_start = true;
-                                    if self.game.shootout_blue == self.game.ranked_count / 2 - 1 {
-                                        self.game.shootout_blue = 0;
-                                    } else {
-                                        self.game.shootout_blue += 1;
-                                    }
-
-                                    if self.game.shootout_number != 5 {
-                                        self.game.shootout_number += 1;
-                                    }
-                                }
-
-                                self.game.shootout_randomized = true;
                             }
                         }
                     }

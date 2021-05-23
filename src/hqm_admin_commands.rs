@@ -226,6 +226,16 @@ impl HQMServer {
                 let msg = format!("{} position {}", player.player_name, input_position);
 
                 player.preferred_faceoff_position = Some(input_position);
+
+                for player_item in self.game.game_players.iter() {
+                    if player.player_name == player_item.player_name_r {
+                        if player_item.player_team == 0 {
+                            self.game.last_red_gk = player_item.player_i_r;
+                        } else {
+                            self.game.last_blue_gk = player_item.player_i_r;
+                        }
+                    }
+                }
                 self.add_server_chat_message(msg);
             }
         }
@@ -1299,7 +1309,7 @@ impl HQMServer {
         for i in self.game.game_players.iter() {
             match i {
                 RHQMGamePlayer {
-                    player_i_r: _,
+                    player_i_r,
                     player_name_r,
                     player_points,
                     player_team,
@@ -1369,14 +1379,17 @@ impl HQMServer {
                         points = -30;
                     }
 
+                    let ping = Self::get_ping(&self.players, player_i_r.to_owned());
+
                     let str_sql_player = format!(
-                        "insert into public.\"GameStats\" values((select max(\"Id\")+1 from public.\"GameStats\"), (select max(\"Id\")+1 from public.\"Stats\"), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), {}, {}, {}, {}, {} )",
+                        "insert into public.\"GameStats\" values((select max(\"Id\")+1 from public.\"GameStats\"), (select max(\"Id\")+1 from public.\"Stats\"), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), {}, {}, {}, {}, {}, {} )",
                         player_name_r,
                         player_team,
                         goals,
                         assists,
                         points,
-                        leaved
+                        leaved,
+                        ping
                     );
                     conn.execute(&str_sql_player, &[]).unwrap();
                 }
