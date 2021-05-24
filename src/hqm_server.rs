@@ -746,23 +746,25 @@ impl HQMServer {
 
     pub(crate) fn get_ping(
         players: &Vec<Option<HQMConnectedPlayer>>,
-        ping_player_index: usize,
+        ping_player_name: String,
     ) -> usize {
         let mut avg_ping = 0;
-        if ping_player_index < players.len() {
-            if let Some(ping_player) = &players[ping_player_index] {
-                let n = ping_player.last_ping.len() as f32;
-                let mut min = f32::INFINITY;
-                let mut max = f32::NEG_INFINITY;
-                let mut sum = 0f32;
-                for i in ping_player.last_ping.iter() {
-                    min = min.min(*i);
-                    max = max.max(*i);
-                    sum += *i;
-                }
-                let avg = sum / n;
+        for (player_index, player) in players.iter().enumerate() {
+            if let Some(player) = player {
+                if player.player_name == ping_player_name {
+                    let n = player.last_ping.len() as f32;
+                    let mut min = f32::INFINITY;
+                    let mut max = f32::NEG_INFINITY;
+                    let mut sum = 0f32;
+                    for i in player.last_ping.iter() {
+                        min = min.min(*i);
+                        max = max.max(*i);
+                        sum += *i;
+                    }
+                    let avg = sum / n;
 
-                avg_ping = avg as usize;
+                    avg_ping = avg as usize;
+                }
             }
         }
 
@@ -1307,6 +1309,15 @@ impl HQMServer {
                     }
                 }
             } else {
+                if self.game.time % 300 == 0 {
+                    for object in &mut self.game.world.objects.iter() {
+                        if let HQMGameObject::Puck(puck) = object {
+                            self.game.xpoints.push(puck.body.pos.x);
+                            self.game.zpoints.push(puck.body.pos.z);
+                        }
+                    }
+                }
+
                 if self.game.game_over {
                     if !self.game.data_saved {
                         self.game.data_saved = true;

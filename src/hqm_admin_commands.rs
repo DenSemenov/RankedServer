@@ -1379,7 +1379,7 @@ impl HQMServer {
                         points = -30;
                     }
 
-                    let ping = Self::get_ping(&self.players, player_i_r.to_owned());
+                    let ping = Self::get_ping(&self.players, player_name_r.to_owned());
 
                     let str_sql_player = format!(
                         "insert into public.\"GameStats\" values((select max(\"Id\")+1 from public.\"GameStats\"), (select max(\"Id\")+1 from public.\"Stats\"), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), {}, {}, {}, {}, {}, {} )",
@@ -1395,13 +1395,31 @@ impl HQMServer {
                 }
             }
         }
+        let mut xpstrings = vec![];
+
+        for i in self.game.xpoints.iter() {
+            xpstrings.push(format!("{}", i));
+        }
+
+        let mut xpoints = format!("{{{}}}", xpstrings.join(","));
+
+        let mut zpstrings = vec![];
+
+        for i in self.game.zpoints.iter() {
+            zpstrings.push(format!("{}", i));
+        }
+
+        let mut zpoints = format!("{{{}}}", zpstrings.join(","));
 
         let str_sql = format!(
-            "insert into public.\"Stats\" values((select max(\"Id\")+1 from public.\"Stats\"), (select max(\"Season\") from public.\"Stats\"), {},{},NOW(), (select \"Id\" from public.\"Users\" where \"Login\"='{}'))",
+            "insert into public.\"Stats\" values((select max(\"Id\")+1 from public.\"Stats\"), (select max(\"Season\") from public.\"Stats\"), {},{},NOW(), (select \"Id\" from public.\"Users\" where \"Login\"='{}'),'{}','{}')",
             self.game.red_score,
             self.game.blue_score,
-            max_name
+            max_name,
+            xpoints,
+            zpoints
         );
+
         conn.execute(&str_sql, &[]).unwrap();
 
         self.add_server_chat_message(format!(

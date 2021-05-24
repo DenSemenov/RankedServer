@@ -172,6 +172,8 @@ pub(crate) struct HQMGame {
     pub(crate) need_to_send: bool,
     pub(crate) last_red_gk: usize,
     pub(crate) last_blue_gk: usize,
+    pub(crate) xpoints: Vec<f32>,
+    pub(crate) zpoints: Vec<f32>,
 }
 
 impl HQMGame {
@@ -222,7 +224,7 @@ impl HQMGame {
             logged_players: Vec::new(),
             logged_players_for_next: Vec::new(),
             ranked_started: false,
-            ranked_count: 8,
+            ranked_count: 4,
             game_players: Vec::new(),
             shootout_red: 0,
             shootout_blue: 0,
@@ -247,6 +249,8 @@ impl HQMGame {
             need_to_send: false,
             last_red_gk: 999,
             last_blue_gk: 999,
+            xpoints: Vec::new(),
+            zpoints: Vec::new(),
         }
     }
 
