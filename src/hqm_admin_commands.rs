@@ -1170,7 +1170,7 @@ impl HQMServer {
         let mut return_message = String::from("");
         let mut reported = false;
 
-        if self.game.ranked_started{
+        if !self.game.ranked_started{
             return_message = String::from("You can report only in game");
         }
         else{
