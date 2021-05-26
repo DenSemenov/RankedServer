@@ -1160,6 +1160,89 @@ impl HQMServer {
         conn.execute(&str_sql, &[]).unwrap();
     }
 
+    pub fn send_report(&mut self, from: usize, to: usize) {
+        let conn = Connection::connect(
+            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let mut return_message = String::from("");
+        let mut reported = false;
+
+        if self.game.ranked_started{
+            return_message = String::from("You can report only in game");
+        }
+        else{
+            if to==from{
+                return_message = String::from("You can't report yourself");
+            }
+            else{
+                let mut from_name = String::from("");
+                let mut to_name = String::from("");
+
+                for player_item in self.game.logged_players.iter() {
+                    if from == player_item.player_i {
+                        from_name = format!("{}", player_item.player_name);
+                    }
+                    if to == player_item.player_i {
+                        to_name = format!("{}", player_item.player_name);
+                    }
+                }
+
+                if from_name.len() == 0 || to_name.len() == 0 {
+                    if from_name.len() == 0 {
+                        return_message = String::from("You are not in game");
+                    }
+
+                    if to_name.len() == 0 {
+                        return_message = String::from("Player with entered ID wasn't found");
+                    }
+                } else {
+                    let str_sql = format!(
+                        "SELECT count(r.\"Id\") FROM public.\"Reports\" as r, public.\"Users\" as u WHERE r.\"ReportBy\"=u.\"Id\" and u.\"Login\"='{}' and (select DATE_PART('day', NOW() - \"DateReported\"))<7",
+                        from_name
+                    );
+
+                    info!("{}",str_sql); 
+
+                    let mut exists: i64 = 0;
+
+                    let stmt = conn.prepare(&str_sql).unwrap();
+                    for row in stmt.query(&[]).unwrap() {
+                        exists = row.get(0);
+                    }
+
+                    if exists == 1 {
+                        return_message = String::from("You can report one player by week");
+                    } else {
+                        let str_sql_insert = format!(
+                            "INSERT INTO public.\"Reports\" VALUES ((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"Reports\"), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), NOW());", 
+                            to_name, 
+                            from_name
+                        );
+
+                        info!("{}",str_sql_insert); 
+
+                        conn.execute(&str_sql_insert, &[]).unwrap();
+
+                        return_message = format!("{} has been reported by {}", to_name, from_name);
+                        reported = true;
+                    }
+                }
+            }
+        }
+
+        if reported{
+            self.add_server_chat_message(return_message);
+        }else{
+            self.add_directed_server_chat_message(
+                return_message,
+                from,
+            );
+        }
+    }
+
     pub(crate) fn login(&mut self, player_index: usize, password_user: &str) {
         let mut logged = false;
         if let Some(player) = &self.players[player_index] {
@@ -1208,15 +1291,36 @@ impl HQMServer {
 
                 let mut name = String::from("");
                 let mut next = false;
-                for row in stmt.query(&[]).unwrap() {
-                    let count: i64 = row.get(0);
-                    if count > 0 {
-                        let player_item = RHQMPlayer {
-                            player_i: player_index,
-                            player_name: player.player_name.to_string(),
-                            afk: false,
-                        };
 
+                let mut count: i64 = 0;
+
+                for row in stmt.query(&[]).unwrap() {
+                    count = row.get(0);
+                }
+
+                if count > 0 {
+                    let player_item = RHQMPlayer {
+                        player_i: player_index,
+                        player_name: player.player_name.to_string(),
+                        afk: false,
+                    };
+
+                    let str_sql_banned = format!(
+                        "select count(*) from public.\"Reports\" where \"ReportTo\"=(select \"Id\" from public.\"Users\" where \"Login\"='{}') and DATE_PART('day', NOW() - \"DateReported\")<7",
+                        player.player_name
+                    );
+                    let stmt_banned = conn.prepare(&str_sql_banned).unwrap();
+                    let mut banned_count:i64 = 0;
+                    for row in stmt_banned.query(&[]).unwrap() {
+                        banned_count = row.get(0);
+                    }
+
+                    if banned_count>9{
+                        self.add_directed_server_chat_message(
+                            String::from("You are banned"),
+                            player_index,
+                        );
+                    }else{
                         name = player.player_name.to_string();
 
                         if (self.game.logged_players.len()) < self.game.ranked_count {
@@ -1225,12 +1329,10 @@ impl HQMServer {
                             next = true;
                             self.game.logged_players_for_next.push(player_item.clone());
                         }
+                        
+                        self.user_logged_in(&name.to_owned(), next);
                     }
-                }
-
-                if name.len() > 0 {
-                    self.user_logged_in(&name.to_owned(), next);
-                } else {
+                }else{
                     self.add_directed_server_chat_message(
                         String::from("Wrong password"),
                         player_index,

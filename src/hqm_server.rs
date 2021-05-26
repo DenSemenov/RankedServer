@@ -301,6 +301,13 @@ impl HQMServer {
                     }
                 }
             }
+            "report" => {
+                if let Ok(report_player_index) = arg.parse::<usize>() {
+                    if report_player_index < self.players.len() {
+                        self.send_report(player_index, report_player_index);
+                    }
+                }
+            }
             "unmute" => {
                 if let Ok(mute_player_index) = arg.parse::<usize>() {
                     if mute_player_index < self.players.len() {
@@ -1857,6 +1864,7 @@ impl HQMServer {
         self.game.ranked_started = false;
         for i in old_game.logged_players_for_next.iter() {
             self.game.logged_players.push(i.clone());
+            self.set_team(i.player_i, Some(HQMTeam::Red));
         }
         self.game.logged_players_for_next = vec![];
 
