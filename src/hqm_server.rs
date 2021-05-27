@@ -1644,8 +1644,8 @@ impl HQMServer {
                     if goal_scorer_index.is_none() {
                         goal_scorer_index = Some(player_index);
 
-                        let mut score_index: usize = 999;
-
+                        let mut index = 0;
+                        let mut score_index = 999;
                         for i in self.game.game_players.iter() {
                             match i {
                                 RHQMGamePlayer {
@@ -1658,8 +1658,9 @@ impl HQMServer {
                                     leaved_seconds: _,
                                 } => {
                                     if player_i_r == &player_index {
-                                        score_index = player_i_r.to_owned();
+                                        score_index = index;
                                     }
+                                    index += 1;
                                 }
                             }
                         }
@@ -1670,8 +1671,8 @@ impl HQMServer {
                     } else if assist_index.is_none() && Some(player_index) != goal_scorer_index {
                         assist_index = Some(player_index);
 
-                        let mut score_index: usize = 999;
-
+                        let mut index = 0;
+                        let mut score_index = 999;
                         for i in self.game.game_players.iter() {
                             match i {
                                 RHQMGamePlayer {
@@ -1684,8 +1685,9 @@ impl HQMServer {
                                     leaved_seconds: _,
                                 } => {
                                     if player_i_r == &player_index {
-                                        score_index = player_i_r.to_owned();
+                                        score_index = index;
                                     }
+                                    index += 1;
                                 }
                             }
                         }
