@@ -1644,25 +1644,55 @@ impl HQMServer {
                     if goal_scorer_index.is_none() {
                         goal_scorer_index = Some(player_index);
 
-                        let index = self
-                            .game
-                            .game_players
-                            .iter()
-                            .position(|r| r.player_i_r == player_index)
-                            .unwrap();
+                        let mut score_index: usize = 999;
 
-                        self.game.game_players[index].goals += 1;
+                        for i in self.game.game_players.iter() {
+                            match i {
+                                RHQMGamePlayer {
+                                    player_i_r,
+                                    player_name_r: _,
+                                    player_points: _,
+                                    player_team: _,
+                                    goals: _,
+                                    assists: _,
+                                    leaved_seconds: _,
+                                } => {
+                                    if player_i_r == &player_index {
+                                        score_index = player_i_r.to_owned();
+                                    }
+                                }
+                            }
+                        }
+
+                        if score_index != 999 {
+                            self.game.game_players[score_index].goals += 1;
+                        }
                     } else if assist_index.is_none() && Some(player_index) != goal_scorer_index {
                         assist_index = Some(player_index);
 
-                        let index = self
-                            .game
-                            .game_players
-                            .iter()
-                            .position(|r| r.player_i_r == player_index)
-                            .unwrap();
+                        let mut score_index: usize = 999;
 
-                        self.game.game_players[index].assists += 1;
+                        for i in self.game.game_players.iter() {
+                            match i {
+                                RHQMGamePlayer {
+                                    player_i_r,
+                                    player_name_r: _,
+                                    player_points: _,
+                                    player_team: _,
+                                    goals: _,
+                                    assists: _,
+                                    leaved_seconds: _,
+                                } => {
+                                    if player_i_r == &player_index {
+                                        score_index = player_i_r.to_owned();
+                                    }
+                                }
+                            }
+                        }
+
+                        if score_index != 999 {
+                            self.game.game_players[score_index].assists += 1;
+                        }
                         break;
                     }
                 }
