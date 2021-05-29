@@ -1031,6 +1031,21 @@ impl HQMServer {
                         self.game.logged_players.remove(logged_selected);
                     }
                 }
+
+                let mut logged_index_next = 0;
+                let mut logged_selected_next = 999;
+                for player in self.game.logged_players_for_next.iter() {
+                    if player.player_i == player_index {
+                        logged_selected_next = logged_index_next;
+                    }
+                    logged_index_next += 1;
+                }
+
+                if logged_selected_next != 999 {
+                    self.game
+                        .logged_players_for_next
+                        .remove(logged_selected_next);
+                }
             }
             None => {}
         }
@@ -1896,7 +1911,6 @@ impl HQMServer {
         self.game.ranked_started = false;
         for i in old_game.logged_players_for_next.iter() {
             self.game.logged_players.push(i.clone());
-            self.set_team(i.player_i, Some(HQMTeam::Red));
         }
         self.game.logged_players_for_next = vec![];
 
@@ -1973,6 +1987,16 @@ impl HQMServer {
 
         self.allow_ranked_join = true;
         self.game.time = self.config.time_warmup * 100;
+
+        let mut indexes = vec![];
+
+        for i in self.game.logged_players.iter() {
+            indexes.push(i.player_i);
+        }
+
+        for i in indexes.iter() {
+            self.set_team(i.to_owned(), Some(HQMTeam::Red));
+        }
     }
 
     fn get_faceoff_positions(
