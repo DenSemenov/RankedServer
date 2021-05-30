@@ -1403,7 +1403,7 @@ impl HQMServer {
         let avg_blue = sum_blue / ((self.game.ranked_count as isize) / 2);
 
         let max = 20;
-        let min = 10;
+        let min = 15;
 
         let mut max_points = 0;
         let mut max_name = String::from("");
@@ -1431,7 +1431,7 @@ impl HQMServer {
                         }
 
                         if (player_points.to_owned() as isize + max as isize) < avg_red as isize {
-                            val = max as isize;
+                            val = min as isize;
                         }
 
                         win_div = max - val;
