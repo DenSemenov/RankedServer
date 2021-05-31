@@ -1331,7 +1331,7 @@ impl HQMServer {
                     }
                 }
             } else {
-                if self.game.time % 300 == 0 {
+                if self.game.time % 300 == 0 && self.game.state == HQMGameState::Game {
                     for object in &mut self.game.world.objects.iter() {
                         if let HQMGameObject::Puck(puck) = object {
                             self.game.xpoints.push(puck.body.pos.x);
@@ -1392,6 +1392,15 @@ impl HQMServer {
                         if self.game.time_break > 1500 && self.game.time_break < 1700 {
                             if !self.game.game_over {
                                 if self.game.shootout_randomized == false {
+                                    if self.game.shootout_number != 4
+                                        && self.game.shoutout_red_start
+                                        && !self.game.shootout_started
+                                    {
+                                        self.game.shootout_number += 1;
+                                    }
+
+                                    self.game.shootout_started = true;
+
                                     self.config.team_max = 1;
                                     self.force_players_off_ice_by_system();
 
@@ -1576,10 +1585,6 @@ impl HQMServer {
                                             self.game.shootout_blue = 0;
                                         } else {
                                             self.game.shootout_blue += 1;
-                                        }
-
-                                        if self.game.shootout_number != 4 {
-                                            self.game.shootout_number += 1;
                                         }
                                     }
 

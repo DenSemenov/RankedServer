@@ -1388,22 +1388,38 @@ impl HQMServer {
         )
         .unwrap();
 
-        let mut sum_red = 0;
-        let mut sum_blue = 0;
+        let max = 30;
+        let min = 20;
+
+        let mut red_max = 0;
+        let mut blue_max = 0;
+
+        let mut red_min = 1000;
+        let mut blue_min = 1000;
 
         for i in self.game.game_players.iter() {
             if i.player_team == 0 {
-                sum_red += i.player_points;
+                if i.player_points>red_max{
+                    red_max = i.player_points;
+                } 
+                if i.player_points<red_min{
+                    red_min = i.player_points;
+                }  
             } else {
-                sum_blue += i.player_points;
+                if i.player_points>blue_max{
+                    blue_max = i.player_points;
+                } 
+                if i.player_points<blue_min{
+                    blue_min = i.player_points;
+                }  
             }
         }
 
-        let avg_red = sum_red / ((self.game.ranked_count as isize) / 2);
-        let avg_blue = sum_blue / ((self.game.ranked_count as isize) / 2);
+        let red_div = red_max - red_min;
+        let blue_div = blue_max - blue_min;
 
-        let max = 20;
-        let min = 15;
+        let red_one_point = (max-min)/red_div;
+        let blue_one_point = (max-min)/blue_div;
 
         let mut max_points = 0;
         let mut max_name = String::from("");
@@ -1419,60 +1435,30 @@ impl HQMServer {
                     assists,
                     leaved_seconds,
                 } => {
-                    let mut win_div = 10;
-                    let mut lose_div = 10;
-
-                    if player_team == &0 {
-                        let mut val =
-                            isize::abs(player_points.to_owned() as isize - avg_red as isize);
-
-                        if player_points.to_owned() as isize - max as isize > avg_red as isize {
-                            val = max as isize;
-                        }
-
-                        if (player_points.to_owned() as isize + max as isize) < avg_red as isize {
-                            val = min as isize;
-                        }
-
-                        win_div = max - val;
-                        lose_div = val;
-                    } else {
-                        let mut val =
-                            isize::abs(player_points.to_owned() as isize - avg_blue as isize);
-                        if player_points.to_owned() as isize - max as isize > avg_blue as isize {
-                            val = max as isize;
-                        }
-
-                        if (player_points.to_owned() as isize + max as isize) < avg_blue as isize {
-                            val = min as isize;
-                        }
-                        win_div = max - val;
-                        lose_div = val;
-                    }
-
                     let mut points = 0;
 
                     if player_team == &0 {
-                        if self.game.red_score > self.game.blue_score {
-                            points = win_div as isize + self.game.red_score as isize
-                                - self.game.blue_score as isize;
-                        } else {
-                            points = -1 as isize * lose_div as isize - self.game.blue_score as isize
-                                + self.game.red_score as isize
+                        if self.game.red_score > self.game.blue_score{
+                            points = min+(red_div-(player_points - red_min))*red_one_point;
+
+                            if goals+assists>max_points{
+                                max_points = goals+assists;
+                                max_name = player_name_r.to_owned();
+                            }
+                        }else{
+                            points = -1 * (min+(player_points - red_min)*red_one_point);
                         }
                     } else {
-                        if self.game.blue_score > self.game.red_score {
-                            points = win_div as isize + self.game.blue_score as isize
-                                - self.game.red_score as isize;
-                        } else {
-                            points = -1 as isize * lose_div as isize - self.game.red_score as isize
-                                + self.game.blue_score as isize
-                        }
-                    }
+                        if self.game.red_score < self.game.blue_score{
+                            points = min+(blue_div-(player_points - blue_min))*blue_one_point;
 
-                    if goals + assists >= max_points {
-                        max_name = player_name_r.to_owned();
-                        max_points = goals + assists;
+                            if goals+assists>max_points{
+                                max_points = goals+assists;
+                                max_name = player_name_r.to_owned();
+                            }
+                        }else{
+                            points = -1 * (min+(player_points - blue_min)*blue_one_point);
+                        }
                     }
 
                     let mut leaved = false;
@@ -1526,7 +1512,7 @@ impl HQMServer {
 
         self.add_server_chat_message(format!(
             "{} {}",
-            String::from("Ranked game ended I MVP: "),
+            String::from("Ranked game ended I MVP:"),
             max_name
         ));
     }
