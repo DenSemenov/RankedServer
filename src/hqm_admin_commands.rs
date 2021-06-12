@@ -956,6 +956,7 @@ impl HQMServer {
 
                 Self::send_notify(players);
                 let sum = self.randomize_players();
+                self.set_koef();
                 self.force_players_off_ice_by_system();
                 self.set_teams_by_server(sum);
             } else {
@@ -977,6 +978,10 @@ impl HQMServer {
 
             self.add_server_chat_message(msg);
         }
+    }
+
+    pub(crate) fn set_koef(&mut self){
+        
     }
 
     pub(crate) fn set_teams_by_server(&mut self, sum: isize) {
@@ -1003,6 +1008,7 @@ impl HQMServer {
                     goals: _,
                     assists: _,
                     leaved_seconds: _,
+                    koef: _,
                 } => {
                     if red_count == self.game.ranked_count / 2 {
                         blue_team.push(player_i_r.to_owned());
@@ -1066,6 +1072,7 @@ impl HQMServer {
                 goals: 0,
                 assists: 0,
                 leaved_seconds: 120,
+                koef: 0
             };
             info!("{} {} {}", sum, points, player.player_name);
             sum = sum + points;
@@ -1389,7 +1396,7 @@ impl HQMServer {
         .unwrap();
 
         let max = 30;
-        let min = 20;
+        let min = 15;
 
         let mut red_max = 0;
         let mut blue_max = 0;
@@ -1413,13 +1420,29 @@ impl HQMServer {
                     blue_min = i.player_points;
                 }  
             }
+           
+        }
+
+        if red_min==1000{
+            red_min = 0;
+        }
+
+        if blue_min==1000{
+            blue_min = 0;
         }
 
         let red_div = red_max - red_min;
         let blue_div = blue_max - blue_min;
 
-        let red_one_point = (max-min)/red_div;
-        let blue_one_point = (max-min)/blue_div;
+        let mut red_one_point: f32 = 0.0;
+        if red_div!=0{
+            red_one_point = (((max-min)as f32)/red_div as f32) as f32;
+        }
+
+        let mut blue_one_point: f32 = 0.0;
+        if blue_div!=0{
+            blue_one_point = (((max-min)as f32)/blue_div as f32) as f32;
+        }
 
         let mut max_points = 0;
         let mut max_name = String::from("");
@@ -1434,30 +1457,31 @@ impl HQMServer {
                     goals,
                     assists,
                     leaved_seconds,
+                    koef
                 } => {
                     let mut points = 0;
 
                     if player_team == &0 {
                         if self.game.red_score > self.game.blue_score{
-                            points = min+(red_div-(player_points - red_min))*red_one_point;
+                            points = min+((red_div-(player_points - red_min)) as f32 *red_one_point) as isize;
 
                             if goals+assists>max_points{
                                 max_points = goals+assists;
                                 max_name = player_name_r.to_owned();
                             }
                         }else{
-                            points = -1 * (min+(player_points - red_min)*red_one_point);
+                            points = -1 * (min+((player_points - red_min) as f32 *red_one_point) as isize);
                         }
                     } else {
                         if self.game.red_score < self.game.blue_score{
-                            points = min+(blue_div-(player_points - blue_min))*blue_one_point;
+                            points = min+(((blue_div-(player_points - blue_min))  as f32) *blue_one_point) as isize;
 
                             if goals+assists>max_points{
                                 max_points = goals+assists;
                                 max_name = player_name_r.to_owned();
                             }
                         }else{
-                            points = -1 * (min+(player_points - blue_min)*blue_one_point);
+                            points = -1 * (min+(((player_points - blue_min) as f32)*blue_one_point) as isize);
                         }
                     }
 
@@ -1483,6 +1507,7 @@ impl HQMServer {
                 }
             }
         }
+        
         let mut xpstrings = vec![];
 
         for i in self.game.xpoints.iter() {

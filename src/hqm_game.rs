@@ -225,7 +225,7 @@ impl HQMGame {
             logged_players: Vec::new(),
             logged_players_for_next: Vec::new(),
             ranked_started: false,
-            ranked_count: 8,
+            ranked_count: 4,
             game_players: Vec::new(),
             shootout_started: false,
             shootout_red: 0,
@@ -1716,6 +1716,7 @@ pub(crate) struct RHQMGamePlayer {
     pub goals: usize,
     pub assists: usize,
     pub leaved_seconds: usize,
+    pub koef: isize,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]

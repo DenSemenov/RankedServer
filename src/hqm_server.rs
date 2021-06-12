@@ -875,6 +875,7 @@ impl HQMServer {
                                 goals: _,
                                 assists: _,
                                 leaved_seconds,
+                                koef: _,
                             } => {
                                 if player_name_r == &player_name {
                                     exist = true;
@@ -1205,6 +1206,46 @@ impl HQMServer {
                     let chat_msg = format!("{} timed out", player.player_name);
                     chat_messages.push(chat_msg);
 
+                    if self.game.ranked_started {
+                        let mut exist = false;
+                        let mut leaved_seconds = 0;
+                        let mut index = 0;
+                        let mut found_index = 0;
+                        for i in self.game.game_players.iter() {
+                            match i {
+                                RHQMGamePlayer {
+                                    player_i_r: _,
+                                    player_name_r,
+                                    player_points: _,
+                                    player_team: _,
+                                    goals: _,
+                                    assists: _,
+                                    leaved_seconds,
+                                    koef: _,
+                                } => {
+                                    if player_name_r == &player.player_name {
+                                        exist = true;
+                                        found_index = index;
+                                    }
+                                }
+                            }
+                            index += 1;
+                        }
+    
+                        if exist {
+                            leaved_seconds = self.game.game_players[found_index].leaved_seconds;
+                        }
+    
+                        if exist {
+                            let secs = leaved_seconds % 60;
+                            let minutes = (leaved_seconds - secs) / 60;
+                            let msg = format!("{} have {}m {}s to rejoin", player.player_name, minutes, secs);
+                            if !self.game.game_over {
+                                chat_messages.push(msg);
+                            }
+                        }
+                    }
+
                     *player_option = None;
 
                     continue;
@@ -1393,15 +1434,14 @@ impl HQMServer {
                             if !self.game.game_over {
                                 if self.game.shootout_randomized == false {
                                     if self.game.shootout_number != 4
-                                        && self.game.shoutout_red_start
-                                        && !self.game.shootout_started
-                                    {
-                                        self.game.shootout_number += 1;
-                                    }
+                                    && self.game.shoutout_red_start
+                                    && self.game.shootout_started
+                                {
+                                    self.game.shootout_number += 1;
+                                }
 
                                     self.game.shootout_started = true;
 
-                                    self.config.team_max = 1;
                                     self.force_players_off_ice_by_system();
 
                                     let mut red_stat = String::from("").to_owned();
@@ -1676,6 +1716,7 @@ impl HQMServer {
                                     goals: _,
                                     assists: _,
                                     leaved_seconds: _,
+                                    koef: _,
                                 } => {
                                     if player_i_r == &player_index {
                                         score_index = index;
@@ -1703,6 +1744,7 @@ impl HQMServer {
                                     goals: _,
                                     assists: _,
                                     leaved_seconds: _,
+                                    koef: _,
                                 } => {
                                     if player_i_r == &player_index {
                                         score_index = index;
@@ -2188,7 +2230,7 @@ impl HQMServer {
                             self.game.time = self.config.time_period * 100;
 
                             if self.game.period > 3 {
-                                self.game.time = 1500;
+                                self.game.time = 1000;
                             }
                         }
                         self.do_faceoff();
