@@ -225,7 +225,7 @@ impl HQMGame {
             logged_players: Vec::new(),
             logged_players_for_next: Vec::new(),
             ranked_started: false,
-            ranked_count: 4,
+            ranked_count: 8,
             game_players: Vec::new(),
             shootout_started: false,
             shootout_red: 0,
