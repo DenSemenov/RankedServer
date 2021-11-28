@@ -1,0 +1,11 @@
+[2mNov 28 17:25:32.901[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mNov 28 17:25:32.906[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mNov 28 17:25:35.716[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.142.136:54707
+[2mNov 28 17:25:42.848[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: 70n0ff (0) is now admin
+[2mNov 28 17:25:47.445[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mNov 28 17:25:49.497[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: Clock set to 0:1 by 70n0ff (0)
+[2mNov 28 17:26:06.455[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mNov 28 17:26:16.994[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mNov 28 17:26:29.645[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) exited server
+[2mNov 28 17:26:29.654[0m [32m INFO[0m migo_hqm_server::hqm_server: Game 1 abandoned
+[2mNov 28 17:26:29.654[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 2 started

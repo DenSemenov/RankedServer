@@ -2572,6 +2572,33 @@ impl HQMServer {
                                             }
                                         }
 
+                                        if self.game.mini_game_time % 500 == 0 {
+                                            for puck in pucks.iter() {
+                                                let result = self.check_puck_stay(puck);
+                                                if result == 1 {
+                                                    self.game.world.objects[puck.index] =
+                                                        HQMGameObject::None;
+                                                    let result = format!(
+                                                        "{}.{}",
+                                                        (30000 - self.game.mini_game_time) / 100,
+                                                        (30000 - self.game.mini_game_time) % 100
+                                                    );
+                                                    self.add_server_chat_message(format!(
+                                                        "Puck was on air {}, result saved",
+                                                        result.to_string()
+                                                    ));
+                                                    Self::save_air_mini_game_result(
+                                                        &self.game.next_game_player,
+                                                        result,
+                                                    );
+                                                    if self.game.wait_for_end {
+                                                        self.game.time = 0;
+                                                    }
+                                                    self.game.mini_game_time = 300;
+                                                }
+                                            }
+                                        }
+
                                         if self.game.world.gravity != 0.000680555 {
                                             self.game.world.gravity += 0.0000001;
                                         }
@@ -2635,6 +2662,17 @@ impl HQMServer {
     pub fn check_puck_touched_ice(&mut self, puck: &HQMPuck) -> usize {
         let mut result = 0;
         if puck.body.pos.y <= 0.1 {
+            result = 1;
+        }
+
+        return result;
+    }
+
+    pub fn check_puck_stay(&mut self, puck: &HQMPuck) -> usize {
+        let mut result = 0;
+        if puck.body.pos.y + 0.2 < self.game.last_puck_point
+            && puck.body.pos.y - 0.2 > self.game.last_puck_point
+        {
             result = 1;
         }
 

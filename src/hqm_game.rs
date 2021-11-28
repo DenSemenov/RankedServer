@@ -184,6 +184,8 @@ pub(crate) struct HQMGame {
     pub(crate) gk_last_height: usize,
     pub(crate) gk_puck_in_net: bool,
 
+    pub(crate) last_puck_point: f32,
+
     pub(crate) catcher_vectors: Vec<f32>,
 
     pub(crate) last_random_index: usize,
@@ -285,6 +287,7 @@ impl HQMGame {
             last_mini_game_changed: true,
             force_intermission: false,
             wait_for_end: false,
+            last_puck_point: 0.0,
         }
     }
 
