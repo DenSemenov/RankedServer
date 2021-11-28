@@ -226,16 +226,6 @@ impl HQMServer {
                 let msg = format!("{} position {}", player.player_name, input_position);
 
                 player.preferred_faceoff_position = Some(input_position);
-
-                for player_item in self.game.game_players.iter() {
-                    if player.player_name == player_item.player_name_r {
-                        if player_item.player_team == 0 {
-                            self.game.last_red_gk = player_item.player_i_r;
-                        } else {
-                            self.game.last_blue_gk = player_item.player_i_r;
-                        }
-                    }
-                }
                 self.add_server_chat_message(msg);
             }
         }
@@ -930,13 +920,10 @@ impl HQMServer {
     pub(crate) fn user_logged_in(&mut self, user: &str, next: bool) {
         if next == false {
             let msg = format!(
-                "{} logged in [{}/{}]",
+                "{} logged in [{}]",
                 user,
-                self.game.logged_players.len().to_string(),
-                self.game.ranked_count
+                self.game.logged_players.len().to_string()
             );
-
-            self.game.need_to_send = true;
 
             self.add_server_chat_message(msg);
             if self.game.logged_players.len().to_string() == self.game.ranked_count.to_string() {
@@ -944,30 +931,14 @@ impl HQMServer {
                 self.game.time = 2000;
                 self.game.paused = false;
                 self.game.world.gravity = 0.000680555;
-                let mut players = String::from("");
-
-                for player in self.game.logged_players.iter() {
-                    if players.len() == 0 {
-                        players = format!("{}", player.player_name);
-                    } else {
-                        players = format!("{},{}", players, player.player_name);
-                    }
-                }
-
-                Self::send_notify(players);
                 let sum = self.randomize_players();
-                self.set_koef();
                 self.force_players_off_ice_by_system();
                 self.set_teams_by_server(sum);
             } else {
-                let mut player_index = 0;
-
-                for player_item in self.game.logged_players.iter() {
-                    if user == player_item.player_name {
-                        player_index = player_item.player_i;
-                    }
+                if self.game.logged_players.len() == 1 {
+                    self.game.time = 0;
+                    self.game.paused = false;
                 }
-                self.set_team(player_index, Some(HQMTeam::Red));
             }
         } else {
             let msg = format!(
@@ -980,11 +951,7 @@ impl HQMServer {
         }
     }
 
-    pub(crate) fn set_koef(&mut self){
-        
-    }
-
-    pub(crate) fn set_teams_by_server(&mut self, sum: isize) {
+    pub(crate) fn set_teams_by_server(&mut self, sum: usize) {
         let mut sum_red = 0;
         let mut sum_blue = 0;
         let half_sum = sum / 2;
@@ -1008,7 +975,6 @@ impl HQMServer {
                     goals: _,
                     assists: _,
                     leaved_seconds: _,
-                    koef: _,
                 } => {
                     if red_count == self.game.ranked_count / 2 {
                         blue_team.push(player_i_r.to_owned());
@@ -1054,11 +1020,11 @@ impl HQMServer {
             self.set_team(i.to_owned(), Some(HQMTeam::Blue));
         }
 
-        // let msg2 = format!("{} {}", sum_red, sum_blue);
-        // self.add_server_chat_message(msg2);
+        let msg2 = format!("{} {}", sum_red, sum_blue);
+        self.add_server_chat_message(msg2);
     }
 
-    pub(crate) fn randomize_players(&mut self) -> isize {
+    pub(crate) fn randomize_players(&mut self) -> usize {
         self.add_server_chat_message(String::from("Ranked game starting"));
         let mut sum = 0;
 
@@ -1072,9 +1038,8 @@ impl HQMServer {
                 goals: 0,
                 assists: 0,
                 leaved_seconds: 120,
-                koef: 0
             };
-            info!("{} {} {}", sum, points, player.player_name);
+
             sum = sum + points;
 
             self.game.game_players.push(player_item);
@@ -1083,9 +1048,9 @@ impl HQMServer {
         return sum;
     }
 
-    pub fn get_player_points(login: String) -> isize {
+    pub fn get_player_points(login: String) -> usize {
         let conn = Connection::connect(
-            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
             &SslMode::None,
         )
         .unwrap();
@@ -1101,19 +1066,20 @@ impl HQMServer {
             score = row.get(0);
         }
 
-        return score as isize;
+        return score as usize;
     }
 
-    pub fn send_notify(players: String) {
+    pub fn save_mini_game_result(name: &String, result: String) {
         let conn = Connection::connect(
-            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
             &SslMode::None,
         )
         .unwrap();
 
         let str_sql = format!(
-            "insert into public.\"Notifys\" values(1,(select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"Notifys\"), '{{{}}}')",
-            players
+            "insert into public.\"MiniGamesStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"MiniGamesStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
+            name,
+            result
         );
 
         conn.execute(&str_sql, &[]).unwrap();
@@ -1121,7 +1087,7 @@ impl HQMServer {
 
     pub fn save_air_mini_game_result(name: &String, result: String) {
         let conn = Connection::connect(
-            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
             &SslMode::None,
         )
         .unwrap();
@@ -1137,7 +1103,7 @@ impl HQMServer {
 
     pub fn save_gk_mini_game_result(name: &String, result: String) {
         let conn = Connection::connect(
-            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
             &SslMode::None,
         )
         .unwrap();
@@ -1153,7 +1119,7 @@ impl HQMServer {
 
     pub fn save_catch_mini_game_result(name: &String, result: String) {
         let conn = Connection::connect(
-            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
             &SslMode::None,
         )
         .unwrap();
@@ -1167,87 +1133,141 @@ impl HQMServer {
         conn.execute(&str_sql, &[]).unwrap();
     }
 
-    pub fn send_report(&mut self, from: usize, to: usize) {
+    pub(crate) fn afk(&mut self, player_index: usize) {
+        let mut exist = false;
+        let mut index = 0;
+        let mut found_index = 0;
+        for player in self.game.logged_players.iter_mut() {
+            if player.player_i == player_index {
+                exist = true;
+                found_index = index;
+            }
+            index += 1;
+        }
+
+        if exist {
+            self.game.logged_players[found_index].afk = true;
+            self.add_directed_server_chat_message(
+                String::from("You are AFK, type /here if you want to play mini-games"),
+                player_index,
+            );
+        } else {
+            self.add_directed_server_chat_message(
+                String::from("You are not logged in"),
+                player_index,
+            );
+        }
+    }
+
+    pub(crate) fn here(&mut self, player_index: usize) {
+        let mut exist = false;
+        let mut index = 0;
+        let mut found_index = 0;
+        for player in self.game.logged_players.iter_mut() {
+            if player.player_i == player_index {
+                exist = true;
+                found_index = index;
+            }
+            index += 1;
+        }
+
+        if exist {
+            self.game.logged_players[found_index].afk = false;
+            self.add_directed_server_chat_message(String::from("You are not AFK"), player_index);
+        } else {
+            self.add_directed_server_chat_message(
+                String::from("You are not logged in"),
+                player_index,
+            );
+        }
+    }
+
+    pub fn get_mini_game_best_result() -> String {
         let conn = Connection::connect(
-            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
             &SslMode::None,
         )
         .unwrap();
 
-        let mut return_message = String::from("");
-        let mut reported = false;
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"MiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\"limit 1"
+        );
 
-        if !self.game.ranked_started{
-            return_message = String::from("You can report only in game");
-        }
-        else{
-            if to==from{
-                return_message = String::from("You can't report yourself");
-            }
-            else{
-                let mut from_name = String::from("");
-                let mut to_name = String::from("");
+        let mut player = String::from("");
 
-                for player_item in self.game.logged_players.iter() {
-                    if from == player_item.player_i {
-                        from_name = format!("{}", player_item.player_name);
-                    }
-                    if to == player_item.player_i {
-                        to_name = format!("{}", player_item.player_name);
-                    }
-                }
-
-                if from_name.len() == 0 || to_name.len() == 0 {
-                    if from_name.len() == 0 {
-                        return_message = String::from("You are not in game");
-                    }
-
-                    if to_name.len() == 0 {
-                        return_message = String::from("Player with entered ID wasn't found");
-                    }
-                } else {
-                    let str_sql = format!(
-                        "SELECT count(r.\"Id\") FROM public.\"Reports\" as r, public.\"Users\" as u WHERE r.\"ReportBy\"=u.\"Id\" and u.\"Login\"='{}' and (select DATE_PART('day', NOW() - \"DateReported\"))<7",
-                        from_name
-                    );
-
-                    info!("{}",str_sql); 
-
-                    let mut exists: i64 = 0;
-
-                    let stmt = conn.prepare(&str_sql).unwrap();
-                    for row in stmt.query(&[]).unwrap() {
-                        exists = row.get(0);
-                    }
-
-                    if exists == 1 {
-                        return_message = String::from("You can report one player by week");
-                    } else {
-                        let str_sql_insert = format!(
-                            "INSERT INTO public.\"Reports\" VALUES ((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"Reports\"), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), NOW());", 
-                            to_name, 
-                            from_name
-                        );
-
-                        info!("{}",str_sql_insert); 
-
-                        conn.execute(&str_sql_insert, &[]).unwrap();
-
-                        return_message = format!("{} has been reported by {}", to_name, from_name);
-                        reported = true;
-                    }
-                }
-            }
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
         }
 
-        if reported{
-            self.add_server_chat_message(return_message);
-        }else{
-            self.add_directed_server_chat_message(
-                return_message,
-                from,
-            );
+        return player;
+    }
+
+    pub fn get_gk_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"GkMiniGameStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
         }
+
+        return player;
+    }
+
+    pub fn get_catch_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"CatchMiniGameStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
+        }
+
+        return player;
+    }
+
+    pub fn get_air_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"AirMiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
+        }
+
+        return player;
     }
 
     pub(crate) fn login(&mut self, player_index: usize, password_user: &str) {
@@ -1271,7 +1291,7 @@ impl HQMServer {
         if logged == false {
             if let Some(player) = &self.players[player_index] {
                 let conn = Connection::connect(
-                    "postgresql://test:test@89.223.89.237:5432/rhqm",
+                    "postgresql://test:test@85.143.174.177:5432/rhqm",
                     &SslMode::None,
                 )
                 .unwrap();
@@ -1298,36 +1318,15 @@ impl HQMServer {
 
                 let mut name = String::from("");
                 let mut next = false;
-
-                let mut count: i64 = 0;
-
                 for row in stmt.query(&[]).unwrap() {
-                    count = row.get(0);
-                }
+                    let count: i64 = row.get(0);
+                    if count > 0 {
+                        let player_item = RHQMPlayer {
+                            player_i: player_index,
+                            player_name: player.player_name.to_string(),
+                            afk: false,
+                        };
 
-                if count > 0 {
-                    let player_item = RHQMPlayer {
-                        player_i: player_index,
-                        player_name: player.player_name.to_string(),
-                        afk: false,
-                    };
-
-                    let str_sql_banned = format!(
-                        "select count(*) from public.\"Reports\" where \"ReportTo\"=(select \"Id\" from public.\"Users\" where \"Login\"='{}') and DATE_PART('day', NOW() - \"DateReported\")<7",
-                        player.player_name
-                    );
-                    let stmt_banned = conn.prepare(&str_sql_banned).unwrap();
-                    let mut banned_count:i64 = 0;
-                    for row in stmt_banned.query(&[]).unwrap() {
-                        banned_count = row.get(0);
-                    }
-
-                    if banned_count>9{
-                        self.add_directed_server_chat_message(
-                            String::from("You are banned"),
-                            player_index,
-                        );
-                    }else{
                         name = player.player_name.to_string();
 
                         if (self.game.logged_players.len()) < self.game.ranked_count {
@@ -1336,10 +1335,18 @@ impl HQMServer {
                             next = true;
                             self.game.logged_players_for_next.push(player_item.clone());
                         }
-                        
-                        self.user_logged_in(&name.to_owned(), next);
                     }
-                }else{
+                }
+
+                if name.len() > 0 {
+                    self.user_logged_in(&name.to_owned(), next);
+                    if !next {
+                        self.add_directed_server_chat_message(
+                            String::from("Type /afk if you don't want to play mini-games"),
+                            player_index,
+                        );
+                    }
+                } else {
                     self.add_directed_server_chat_message(
                         String::from("Wrong password"),
                         player_index,
@@ -1371,6 +1378,42 @@ impl HQMServer {
         }
     }
 
+    pub(crate) fn get_random_logged_player(&mut self) -> usize {
+        let mut players: Vec<usize> = vec![];
+        for player in self.game.logged_players.iter() {
+            if !player.afk {
+                players.push(player.player_i);
+            }
+        }
+
+        let mut non_prev = false;
+        let mut index = 0;
+
+        let mut found_index = 999;
+
+        while non_prev == false {
+            let first: Vec<_> = players
+                .choose_multiple(&mut rand::thread_rng(), 1)
+                .collect();
+
+            if first.len() != 0 {
+                found_index = first[0].to_owned();
+
+                if found_index != self.game.last_random_index {
+                    non_prev = true;
+                }
+            }
+            index += 1;
+            if index == 4 {
+                non_prev = true;
+            }
+        }
+
+        self.game.last_random_index = found_index;
+
+        return found_index;
+    }
+
     pub(crate) fn new_world(&mut self) {
         let mut object_vec = Vec::with_capacity(32);
         for _ in 0..32 {
@@ -1388,61 +1431,105 @@ impl HQMServer {
         self.config.spawn_point = HQMSpawnPoint::Center;
     }
 
+    pub(crate) fn init_mini_game(&mut self) {
+        self.force_players_off_ice_by_system();
+        self.new_world();
+        self.config.spawn_point = HQMSpawnPoint::Center;
+        self.game.world.gravity = 0.000680555;
+        self.game.wait_for_end = false;
+
+        match self.game.last_mini_game {
+            0 => {}
+            1 => {}
+            2 => {}
+            3 => {}
+            _ => {}
+        }
+    }
+
+    pub(crate) fn get_next_mini_game(&mut self) {
+        let mut mini_game_name = String::from("");
+        let mut mini_game_description = String::from("");
+        match self.game.last_mini_game {
+            0 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_mini_game_best_result();
+                mini_game_name = format!("Shoots - best result by {}", best);
+                mini_game_description = String::from("Score 8 goals in less time");
+            }
+            1 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_gk_mini_game_best_result();
+                mini_game_name = format!("Goal defender - best result by {}", best);
+                mini_game_description = String::from("Catch more pucks");
+            }
+            2 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_catch_mini_game_best_result();
+                mini_game_name = format!("Air goals - best result by {}", best);
+                mini_game_description = String::from("Score more air goals");
+            }
+            3 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_air_mini_game_best_result();
+                mini_game_name = format!("Air puck - best result by {}", best);
+                mini_game_description = String::from("Don't let the puck fall more time");
+            }
+            // 1 => {
+            //     self.game.mini_game_warmup = 500;
+
+            //     if self.game.logged_players.len() >= 2 {
+            //         mini_game_name = String::from("Shootouts");
+            //         mini_game_description = String::from("Shootouts with random players");
+            //     } else {
+            //         self.game.last_mini_game += 1;
+            //         self.get_next_mini_game();
+            //     }
+            // }
+            // 2 => {
+            //     if self.game.logged_players.len() >= 2 {
+            //         mini_game_name = String::from("Touch counter");
+            //         mini_game_description = String::from("Shoots");
+            //     } else {
+            //         self.game.last_mini_game += 1;
+            //         self.get_next_mini_game();
+            //     }
+            // }
+            _ => {
+                self.game.last_mini_game = 0;
+                self.get_next_mini_game();
+            }
+        }
+
+        if mini_game_name.len() != 0 {
+            self.add_server_chat_message(format!("Next mini-game: {}", mini_game_name));
+            self.add_server_chat_message(format!("Description: {}", mini_game_description));
+        }
+    }
+
     pub(crate) fn save_data(&mut self) {
         let conn = Connection::connect(
-            "postgresql://test:test@89.223.89.237:5432/rhqm",
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
             &SslMode::None,
         )
         .unwrap();
 
-        let max = 30;
-        let min = 15;
-
-        let mut red_max = 0;
-        let mut blue_max = 0;
-
-        let mut red_min = 1000;
-        let mut blue_min = 1000;
+        let mut sum_red = 0;
+        let mut sum_blue = 0;
 
         for i in self.game.game_players.iter() {
             if i.player_team == 0 {
-                if i.player_points>red_max{
-                    red_max = i.player_points;
-                } 
-                if i.player_points<red_min{
-                    red_min = i.player_points;
-                }  
+                sum_red += i.player_points;
             } else {
-                if i.player_points>blue_max{
-                    blue_max = i.player_points;
-                } 
-                if i.player_points<blue_min{
-                    blue_min = i.player_points;
-                }  
+                sum_blue += i.player_points;
             }
-           
         }
 
-        if red_min==1000{
-            red_min = 0;
-        }
+        let avg_red = sum_red / (self.game.ranked_count / 2);
+        let avg_blue = sum_blue / (self.game.ranked_count / 2);
 
-        if blue_min==1000{
-            blue_min = 0;
-        }
-
-        let red_div = red_max - red_min;
-        let blue_div = blue_max - blue_min;
-
-        let mut red_one_point: f32 = 0.0;
-        if red_div!=0{
-            red_one_point = (((max-min)as f32)/red_div as f32) as f32;
-        }
-
-        let mut blue_one_point: f32 = 0.0;
-        if blue_div!=0{
-            blue_one_point = (((max-min)as f32)/blue_div as f32) as f32;
-        }
+        let max = 30;
+        let min = 5;
 
         let mut max_points = 0;
         let mut max_name = String::from("");
@@ -1450,39 +1537,68 @@ impl HQMServer {
         for i in self.game.game_players.iter() {
             match i {
                 RHQMGamePlayer {
-                    player_i_r,
+                    player_i_r: _,
                     player_name_r,
                     player_points,
                     player_team,
                     goals,
                     assists,
                     leaved_seconds,
-                    koef
                 } => {
+                    let mut win_div = 10;
+                    let mut lose_div = 10;
+
+                    if player_team == &0 {
+                        let mut val =
+                            isize::abs(player_points.to_owned() as isize - avg_red as isize);
+
+                        if player_points.to_owned() as isize - max as isize > avg_red as isize {
+                            val = max as isize;
+                        }
+
+                        if (player_points.to_owned() as isize + max as isize) < avg_red as isize {
+                            val = max as isize;
+                        }
+
+                        win_div = max - val;
+                        lose_div = val;
+                    } else {
+                        let mut val =
+                            isize::abs(player_points.to_owned() as isize - avg_blue as isize);
+                        if player_points.to_owned() as isize - max as isize > avg_blue as isize {
+                            val = max as isize;
+                        }
+
+                        if (player_points.to_owned() as isize + max as isize) < avg_blue as isize {
+                            val = min as isize;
+                        }
+                        win_div = max - val;
+                        lose_div = val;
+                    }
+
                     let mut points = 0;
 
                     if player_team == &0 {
-                        if self.game.red_score > self.game.blue_score{
-                            points = min+((red_div-(player_points - red_min)) as f32 *red_one_point) as isize;
-
-                            if goals+assists>max_points{
-                                max_points = goals+assists;
-                                max_name = player_name_r.to_owned();
-                            }
-                        }else{
-                            points = -1 * (min+((player_points - red_min) as f32 *red_one_point) as isize);
+                        if self.game.red_score > self.game.blue_score {
+                            points = win_div as isize + self.game.red_score as isize
+                                - self.game.blue_score as isize;
+                        } else {
+                            points = -1 as isize * lose_div as isize - self.game.blue_score as isize
+                                + self.game.red_score as isize
                         }
                     } else {
-                        if self.game.red_score < self.game.blue_score{
-                            points = min+(((blue_div-(player_points - blue_min))  as f32) *blue_one_point) as isize;
-
-                            if goals+assists>max_points{
-                                max_points = goals+assists;
-                                max_name = player_name_r.to_owned();
-                            }
-                        }else{
-                            points = -1 * (min+(((player_points - blue_min) as f32)*blue_one_point) as isize);
+                        if self.game.blue_score > self.game.red_score {
+                            points = win_div as isize + self.game.blue_score as isize
+                                - self.game.red_score as isize;
+                        } else {
+                            points = -1 as isize * lose_div as isize - self.game.red_score as isize
+                                + self.game.blue_score as isize
                         }
+                    }
+
+                    if goals + assists >= max_points {
+                        max_name = player_name_r.to_owned();
+                        max_points = goals + assists;
                     }
 
                     let mut leaved = false;
@@ -1491,53 +1607,31 @@ impl HQMServer {
                         points = -30;
                     }
 
-                    let ping = Self::get_ping(&self.players, player_name_r.to_owned());
-
                     let str_sql_player = format!(
-                        "insert into public.\"GameStats\" values((select max(\"Id\")+1 from public.\"GameStats\"), (select max(\"Id\")+1 from public.\"Stats\"), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), {}, {}, {}, {}, {}, {} )",
+                        "insert into public.\"GameStats\" values((select max(\"Id\")+1 from public.\"GameStats\"), (select max(\"Id\")+1 from public.\"Stats\"), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), {}, {}, {}, {}, {} )",
                         player_name_r,
                         player_team,
                         goals,
                         assists,
                         points,
-                        leaved,
-                        ping
+                        leaved
                     );
                     conn.execute(&str_sql_player, &[]).unwrap();
                 }
             }
         }
-        
-        let mut xpstrings = vec![];
-
-        for i in self.game.xpoints.iter() {
-            xpstrings.push(format!("{}", i));
-        }
-
-        let mut xpoints = format!("{{{}}}", xpstrings.join(","));
-
-        let mut zpstrings = vec![];
-
-        for i in self.game.zpoints.iter() {
-            zpstrings.push(format!("{}", i));
-        }
-
-        let mut zpoints = format!("{{{}}}", zpstrings.join(","));
 
         let str_sql = format!(
-            "insert into public.\"Stats\" values((select max(\"Id\")+1 from public.\"Stats\"), (select max(\"Season\") from public.\"Stats\"), {},{},NOW(), (select \"Id\" from public.\"Users\" where \"Login\"='{}'),'{}','{}')",
+            "insert into public.\"Stats\" values((select max(\"Id\")+1 from public.\"Stats\"), (select max(\"Season\") from public.\"Stats\"), {},{},NOW(), (select \"Id\" from public.\"Users\" where \"Login\"='{}'))",
             self.game.red_score,
             self.game.blue_score,
-            max_name,
-            xpoints,
-            zpoints
+            max_name
         );
-
         conn.execute(&str_sql, &[]).unwrap();
 
         self.add_server_chat_message(format!(
             "{} {}",
-            String::from("Ranked game ended I MVP:"),
+            String::from("Ranked game ended I MVP: "),
             max_name
         ));
     }
