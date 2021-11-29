@@ -2519,7 +2519,7 @@ impl HQMServer {
                                         self.game.mini_game_time = 30000;
                                         self.new_world();
                                         self.force_players_off_ice_by_system();
-                                        self.game.world.gravity = 0.000680555;
+                                        self.game.world.gravity = 0.000130555;
                                         self.config.spawn_point = HQMSpawnPoint::Center;
                                         self.game.next_game_player_index =
                                             self.get_random_logged_player();
