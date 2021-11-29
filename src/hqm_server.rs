@@ -2676,6 +2676,8 @@ impl HQMServer {
             result = 1;
         }
 
+        self.game.last_puck_point = puck.body.pos.y;
+
         return result;
     }
 
