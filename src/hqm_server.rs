@@ -2525,7 +2525,7 @@ impl HQMServer {
                                             self.get_random_logged_player();
 
                                         if self.game.next_game_player_index != 999 {
-                                            self.set_team_with_position(
+                                            self.set_team(
                                                 self.game.next_game_player_index,
                                                 Some(HQMTeam::Blue),
                                             );
