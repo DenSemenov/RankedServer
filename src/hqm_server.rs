@@ -2525,15 +2525,9 @@ impl HQMServer {
                                             self.get_random_logged_player();
 
                                         if self.game.next_game_player_index != 999 {
-                                            self.set_team_with_position_by_point(
+                                            self.set_team_with_position(
                                                 self.game.next_game_player_index,
                                                 Some(HQMTeam::Blue),
-                                                17.0,
-                                                1.5,
-                                                6.0,
-                                                0.0,
-                                                -1.0 * FRAC_PI_2,
-                                                0.0,
                                             );
 
                                             for player in self.game.logged_players.iter() {
