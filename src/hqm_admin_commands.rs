@@ -1133,6 +1133,38 @@ impl HQMServer {
         conn.execute(&str_sql, &[]).unwrap();
     }
 
+    pub fn save_scorer_mini_game_result(name: &String, result: String) {
+        let conn = Connection::connect(
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "insert into public.\"ScorerMiniGame\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"ScorerMiniGame\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
+            name,
+            result
+        );
+
+        conn.execute(&str_sql, &[]).unwrap();
+    }
+
+    pub fn save_precision_mini_game_result(name: &String, result: String) {
+        let conn = Connection::connect(
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "insert into public.\"PrecisionMiniGame\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"PrecisionMiniGame\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
+            name,
+            result
+        );
+
+        conn.execute(&str_sql, &[]).unwrap();
+    }
+
     pub(crate) fn afk(&mut self, player_index: usize) {
         let mut exist = false;
         let mut index = 0;
@@ -1257,6 +1289,50 @@ impl HQMServer {
 
         let str_sql = format!(
             "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"AirMiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
+        }
+
+        return player;
+    }
+
+    pub fn get_scorer_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"ScorerMiniGame\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
+        }
+
+        return player;
+    }
+
+    pub fn get_precision_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"PrecisionMiniGame\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
         );
 
         let mut player = String::from("");
@@ -1443,6 +1519,8 @@ impl HQMServer {
             1 => {}
             2 => {}
             3 => {}
+            4 => {}
+            5 => {}
             _ => {}
         }
     }
@@ -1474,6 +1552,19 @@ impl HQMServer {
                 let best = Self::get_air_mini_game_best_result();
                 mini_game_name = format!("Air puck - best result by {}", best);
                 mini_game_description = String::from("Don't let the puck fall more time");
+            }
+            4 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_scorer_mini_game_best_result();
+                mini_game_name = format!("Scorer - best result by {}", best);
+                mini_game_description = String::from("Score more goals with pass");
+            }
+            5 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_precision_mini_game_best_result();
+                mini_game_name = format!("Precision game - best result by {}", best);
+                mini_game_description =
+                    String::from("Send more pucks to square of pucks (5s to attempt)");
             }
             // 1 => {
             //     self.game.mini_game_warmup = 500;

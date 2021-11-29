@@ -6,6 +6,7 @@ use std::fmt::{Display, Formatter};
 
 use crate::hqm_server::{HQMSavedTick, HQMServerConfiguration};
 use chrono::{DateTime, Utc};
+use rand::Rng;
 use std::collections::{HashMap, VecDeque};
 use std::f32::consts::PI;
 use std::rc::Rc;
@@ -195,6 +196,10 @@ pub(crate) struct HQMGame {
     pub(crate) force_intermission: bool,
 
     pub(crate) wait_for_end: bool,
+
+    pub(crate) lastx: f32,
+    pub(crate) lasty: f32,
+    pub(crate) sent: bool,
 }
 
 impl HQMGame {
@@ -275,7 +280,7 @@ impl HQMGame {
             next_game_player_index: 0,
             next_game_player: String::from(""),
             gk_catches: 0,
-            gk_speed: 0.3,
+            gk_speed: 0.2,
             gk_vectors: vec![0.015, 0.01, 0.0, -0.01, -0.015],
             gk_heights: vec![0.1, 0.5, 0.7, 0.3, 0.9],
             gk_last_vector: 2,
@@ -283,11 +288,14 @@ impl HQMGame {
             catcher_vectors: vec![7.0, 10.0, 11.0, 10.0, 8.0],
             gk_puck_in_net: false,
             last_random_index: 0,
-            last_mini_game: 2,
+            last_mini_game: rand::thread_rng().gen_range(0, 6),
             last_mini_game_changed: true,
             force_intermission: false,
             wait_for_end: false,
             last_puck_point: 0.0,
+            lastx: 0.0,
+            lasty: 0.0,
+            sent: true,
         }
     }
 
