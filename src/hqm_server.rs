@@ -269,6 +269,16 @@ impl HQMServer {
             "l" => {
                 self.login(player_index, arg);
             }
+            "vote" => {
+                if let Ok(game) = arg.parse::<usize>() {
+                    self.vote(player_index, game);
+                }
+            }
+            "v" => {
+                if let Ok(game) = arg.parse::<usize>() {
+                    self.vote(player_index, game);
+                }
+            }
             "afk" => {
                 self.afk(player_index);
             }
@@ -2078,10 +2088,18 @@ impl HQMServer {
                         }
 
                         if !self.game.last_mini_game_changed {
-                            self.game.last_mini_game += 1;
                             self.game.last_mini_game_changed = true;
-                            self.add_server_chat_message(String::from("Mini game ended"));
-                            self.game.time_break = 1000;
+                            self.add_server_chat_message(String::from(" "));
+                            self.add_server_chat_message(String::from(
+                                "Vote for next mini game /v # or /vote #",
+                            ));
+                            self.add_server_chat_message(String::from(
+                                "1.Shoots  2.Goal defender  3.Air goals",
+                            ));
+                            self.add_server_chat_message(String::from(
+                                "4.Air puck  5.Scorer  6.Precision game",
+                            ));
+                            self.game.time_break = 1300;
                             self.game.force_intermission = true;
                         }
 
@@ -2096,7 +2114,7 @@ impl HQMServer {
                             0 => {
                                 if self.game.mini_game_warmup > 0 {
                                     if self.game.mini_game_warmup == 499 {
-                                        self.game.mini_game_time = 4000;
+                                        self.game.mini_game_time = 3000;
                                         self.new_world();
                                         self.force_players_off_ice_by_system();
 
@@ -2140,7 +2158,7 @@ impl HQMServer {
                                     self.game.mini_game_warmup -= 1;
                                 } else {
                                     if self.game.mini_game_time > 0 {
-                                        if self.game.mini_game_time == 4000 {
+                                        if self.game.mini_game_time == 3000 {
                                             self.render_pucks(9);
                                         }
 
@@ -2172,17 +2190,17 @@ impl HQMServer {
                                                         self.add_server_chat_message(format!(
                                                             "Puck in net [{}/8] ({}.{})",
                                                             self.game.pucks_in_net.len(),
-                                                            (4000 - self.game.mini_game_time) / 100,
-                                                            (4000 - self.game.mini_game_time) % 100
+                                                            (3000 - self.game.mini_game_time) / 100,
+                                                            (3000 - self.game.mini_game_time) % 100
                                                         ));
                                                     } else {
                                                         self.add_directed_server_chat_message(
                                                             format!(
                                                                 "Puck in net [{}/8] ({}.{})",
                                                                 self.game.pucks_in_net.len(),
-                                                                (4000 - self.game.mini_game_time)
+                                                                (3000 - self.game.mini_game_time)
                                                                     / 100,
-                                                                (4000 - self.game.mini_game_time)
+                                                                (3000 - self.game.mini_game_time)
                                                                     % 100
                                                             ),
                                                             self.game.next_game_player_index,
@@ -2192,8 +2210,8 @@ impl HQMServer {
                                                     if self.game.pucks_in_net.len() == 8 {
                                                         let result = format!(
                                                             "{}.{}",
-                                                            (4000 - self.game.mini_game_time) / 100,
-                                                            (4000 - self.game.mini_game_time) % 100
+                                                            (3000 - self.game.mini_game_time) / 100,
+                                                            (3000 - self.game.mini_game_time) % 100
                                                         );
 
                                                         Self::save_mini_game_result(
@@ -2608,7 +2626,9 @@ impl HQMServer {
                                             }
                                         }
 
-                                        if self.game.mini_game_time % 500 == 0 {
+                                        if self.game.mini_game_time < 29500
+                                            && self.game.mini_game_time % 600 == 0
+                                        {
                                             for puck in pucks.iter() {
                                                 let result = self.check_puck_stay(puck);
                                                 if result == 1 {
@@ -3045,8 +3065,8 @@ impl HQMServer {
 
     pub fn check_puck_stay(&mut self, puck: &HQMPuck) -> usize {
         let mut result = 0;
-        if puck.body.pos.y + 0.2 < self.game.last_puck_point
-            && puck.body.pos.y - 0.2 > self.game.last_puck_point
+        if self.game.last_puck_point < puck.body.pos.y + 0.2
+            && self.game.last_puck_point > puck.body.pos.y - 0.2
         {
             result = 1;
         }

@@ -13,9 +13,8 @@ use crypto::md5::Md5;
 use nalgebra::{Matrix3, Point3};
 use postgres::{Connection, SslMode};
 use rand::seq::SliceRandom;
+use rand::Rng;
 use std::net::SocketAddr;
-use std::num;
-use std::rc::Rc;
 use tracing::info;
 
 impl HQMServer {
@@ -1346,6 +1345,101 @@ impl HQMServer {
         return player;
     }
 
+    pub(crate) fn vote(&mut self, player_index: usize, game: usize) {
+        let mut logged = false;
+        if let Some(player) = &self.players[player_index] {
+            for player_item in self.game.logged_players.iter() {
+                if player.player_name == player_item.player_name {
+                    logged = true;
+                }
+            }
+        }
+
+        if logged {
+            if let Some(player) = &self.players[player_index] {
+                let mut count = 0;
+
+                for vote in self.game.voted1.iter() {
+                    if vote == &player_index {
+                        count += 1;
+                    }
+                }
+
+                for vote in self.game.voted2.iter() {
+                    if vote == &player_index {
+                        count += 1;
+                    }
+                }
+
+                for vote in self.game.voted3.iter() {
+                    if vote == &player_index {
+                        count += 1;
+                    }
+                }
+
+                for vote in self.game.voted4.iter() {
+                    if vote == &player_index {
+                        count += 1;
+                    }
+                }
+
+                for vote in self.game.voted5.iter() {
+                    if vote == &player_index {
+                        count += 1;
+                    }
+                }
+
+                for vote in self.game.voted6.iter() {
+                    if vote == &player_index {
+                        count += 1;
+                    }
+                }
+
+                if count == 0 {
+                    let mut voted_game = String::from("");
+                    match game {
+                        1 => {
+                            self.game.voted1.push(player_index);
+                            voted_game = String::from("Shoots");
+                        }
+                        2 => {
+                            self.game.voted2.push(player_index);
+                            voted_game = String::from("Goal defender");
+                        }
+                        3 => {
+                            self.game.voted3.push(player_index);
+                            voted_game = String::from("Air goals");
+                        }
+                        4 => {
+                            self.game.voted4.push(player_index);
+                            voted_game = String::from("Air puck");
+                        }
+                        5 => {
+                            self.game.voted5.push(player_index);
+                            voted_game = String::from("Scorer");
+                        }
+                        6 => {
+                            self.game.voted6.push(player_index);
+                            voted_game = String::from("Precision game");
+                        }
+                        _ => {}
+                    }
+                    self.add_directed_server_chat_message(
+                        format!("{} voted for {}", player.player_name, voted_game),
+                        player_index,
+                    );
+                } else {
+                    self.add_directed_server_chat_message(
+                        String::from("You can vote only one time"),
+                        player_index,
+                    );
+                }
+            }
+        } else {
+            self.add_directed_server_chat_message(String::from("Log in to vote"), player_index);
+        }
+    }
+
     pub(crate) fn login(&mut self, player_index: usize, password_user: &str) {
         let mut logged = false;
         if let Some(player) = &self.players[player_index] {
@@ -1514,6 +1608,12 @@ impl HQMServer {
         self.game.world.gravity = 0.000680555;
         self.game.wait_for_end = false;
 
+        self.game.voted1 = vec![];
+        self.game.voted2 = vec![];
+        self.game.voted3 = vec![];
+        self.game.voted4 = vec![];
+        self.game.voted5 = vec![];
+        self.game.voted6 = vec![];
         match self.game.last_mini_game {
             0 => {}
             1 => {}
@@ -1526,6 +1626,45 @@ impl HQMServer {
     }
 
     pub(crate) fn get_next_mini_game(&mut self) {
+        let mut max_votes = 0;
+        let mut max_votes_game = 0;
+
+        if self.game.voted1.len() > max_votes {
+            max_votes_game = 0;
+            max_votes = self.game.voted1.len();
+        }
+
+        if self.game.voted2.len() > max_votes {
+            max_votes_game = 1;
+            max_votes = self.game.voted2.len();
+        }
+
+        if self.game.voted3.len() > max_votes {
+            max_votes_game = 2;
+            max_votes = self.game.voted3.len();
+        }
+
+        if self.game.voted4.len() > max_votes {
+            max_votes_game = 3;
+            max_votes = self.game.voted4.len();
+        }
+
+        if self.game.voted5.len() > max_votes {
+            max_votes_game = 4;
+            max_votes = self.game.voted5.len();
+        }
+
+        if self.game.voted6.len() > max_votes {
+            max_votes_game = 5;
+            max_votes = self.game.voted6.len();
+        }
+
+        if max_votes == 0 {
+            max_votes_game = rand::thread_rng().gen_range(0, 6);
+        }
+
+        self.game.last_mini_game = max_votes_game;
+
         let mut mini_game_name = String::from("");
         let mut mini_game_description = String::from("");
         match self.game.last_mini_game {
