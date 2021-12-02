@@ -2892,7 +2892,12 @@ impl HQMServer {
                                         if self.game.mini_game_time % 500 == 0 {
                                             if self.game.gk_puck_in_net == true {
                                                 self.game.gk_puck_in_net = false;
-                                                self.render_pucks(14);
+
+                                                if self.game.gk_catches >= 10 {
+                                                    self.render_pucks(9);
+                                                } else {
+                                                    self.render_pucks(14);
+                                                }
                                                 self.game.sent = true;
                                                 for object in self.game.world.objects.iter_mut() {
                                                     if let HQMGameObject::Puck(puck) = object {
@@ -2983,10 +2988,20 @@ impl HQMServer {
     pub fn check_puck_in_square(&mut self, puck: &HQMPuck) -> usize {
         let mut result = 0;
 
-        if puck.body.pos.x > self.game.lastx && puck.body.pos.y < self.game.lastx + 3.0 {
-            if puck.body.pos.y > self.game.lasty && puck.body.pos.y < self.game.lasty + 3.0 {
-                if puck.body.pos.z < 10.1 && puck.body.pos.z > 9.9 {
-                    result = 1;
+        if self.game.gk_catches >= 10 {
+            if puck.body.pos.x > self.game.lastx && puck.body.pos.y < self.game.lastx + 1.0 {
+                if puck.body.pos.y > self.game.lasty && puck.body.pos.y < self.game.lasty + 1.0 {
+                    if puck.body.pos.z < 10.1 && puck.body.pos.z > 9.9 {
+                        result = 1;
+                    }
+                }
+            }
+        } else {
+            if puck.body.pos.x > self.game.lastx && puck.body.pos.y < self.game.lastx + 2.0 {
+                if puck.body.pos.y > self.game.lasty && puck.body.pos.y < self.game.lasty + 2.0 {
+                    if puck.body.pos.z < 10.1 && puck.body.pos.z > 9.9 {
+                        result = 1;
+                    }
                 }
             }
         }
@@ -3016,15 +3031,34 @@ impl HQMServer {
             Vector3::new(2.0, 3.0, z),
         ];
 
+        if self.game.gk_catches >= 10 {
+            circle_points = vec![
+                Vector3::new(0.0, 0.0, z),
+                Vector3::new(0.0, 1.0, z),
+                Vector3::new(0.0, 2.0, z),
+                Vector3::new(1.0, 0.0, z),
+                Vector3::new(2.0, 0.0, z),
+                Vector3::new(2.0, 1.0, z),
+                Vector3::new(2.0, 2.0, z),
+                Vector3::new(1.0, 2.0, z),
+            ];
+        }
+
         for object in self.game.world.objects.iter_mut() {
             if let HQMGameObject::Puck(puck) = object {
                 if first {
                     first = false;
                 } else {
-                    let circle = circle_points[i];
-                    puck.body.pos.x = circle.x + xoffset;
-                    puck.body.pos.y = circle.y + yoffset;
-                    puck.body.pos.z = circle.z;
+                    if circle_points.len() > i {
+                        let circle = circle_points[i];
+                        puck.body.pos.x = circle.x + xoffset;
+                        puck.body.pos.y = circle.y + yoffset;
+                        puck.body.pos.z = circle.z;
+                    } else {
+                        puck.body.pos.x = 0.0;
+                        puck.body.pos.y = 0.0;
+                        puck.body.pos.z = 0.0;
+                    }
                     i += 1;
                 }
             }
