@@ -2345,7 +2345,7 @@ impl HQMServer {
                                                 && self.game.gk_catches % 5 == 0
                                             {
                                                 self.add_server_chat_message(format!(
-                                                    "{} pucks catched",
+                                                    "{} pucks caught",
                                                     self.game.gk_catches
                                                 ));
                                             }
@@ -2375,7 +2375,7 @@ impl HQMServer {
                                                 );
 
                                                 self.add_server_chat_message(format!(
-                                                    "{} pucks catched, result saved",
+                                                    "{} pucks caught, result saved",
                                                     (self.game.gk_catches - 1)
                                                 ));
 
