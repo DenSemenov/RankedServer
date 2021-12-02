@@ -2896,7 +2896,7 @@ impl HQMServer {
                                                 if self.game.gk_catches >= 10 {
                                                     self.render_pucks(9);
                                                 } else {
-                                                    self.render_pucks(14);
+                                                    self.render_pucks(26);
                                                 }
                                                 self.game.sent = true;
                                                 for object in self.game.world.objects.iter_mut() {
@@ -2989,21 +2989,21 @@ impl HQMServer {
         let mut result = 0;
 
         if self.game.gk_catches >= 10 {
-            if puck.body.pos.x > self.game.lastx - 0.2 && puck.body.pos.y < self.game.lastx + 1.2 {
-                if puck.body.pos.y > self.game.lasty - 0.2
-                    && puck.body.pos.y < self.game.lasty + 1.2
+            if puck.body.pos.x > self.game.lastx - 0.5 && puck.body.pos.y < self.game.lastx + 1.5 {
+                if puck.body.pos.y > self.game.lasty - 0.5
+                    && puck.body.pos.y < self.game.lasty + 1.5
                 {
-                    if puck.body.pos.z < 10.1 && puck.body.pos.z > 9.9 {
+                    if puck.body.pos.z < 10.3 && puck.body.pos.z > 9.7 {
                         result = 1;
                     }
                 }
             }
         } else {
-            if puck.body.pos.x > self.game.lastx - 0.2 && puck.body.pos.y < self.game.lastx + 2.2 {
-                if puck.body.pos.y > self.game.lasty - 0.2
-                    && puck.body.pos.y < self.game.lasty + 2.2
+            if puck.body.pos.x > self.game.lastx - 0.5 && puck.body.pos.y < self.game.lastx + 2.5 {
+                if puck.body.pos.y > self.game.lasty - 0.5
+                    && puck.body.pos.y < self.game.lasty + 2.5
                 {
-                    if puck.body.pos.z < 10.1 && puck.body.pos.z > 9.9 {
+                    if puck.body.pos.z < 10.3 && puck.body.pos.z > 9.7 {
                         result = 1;
                     }
                 }
@@ -3033,6 +3033,18 @@ impl HQMServer {
             Vector3::new(3.0, 3.0, z),
             Vector3::new(1.0, 3.0, z),
             Vector3::new(2.0, 3.0, z),
+            Vector3::new(0.0, 0.5, z), //
+            Vector3::new(0.0, 1.5, z), //
+            Vector3::new(0.0, 2.5, z), //
+            Vector3::new(3.0, 0.5, z), //
+            Vector3::new(3.0, 1.5, z), //
+            Vector3::new(3.0, 2.5, z), //
+            Vector3::new(0.5, 0.0, z), //
+            Vector3::new(1.5, 0.0, z), //
+            Vector3::new(2.5, 0.0, z), //
+            Vector3::new(0.5, 3.0, z), //
+            Vector3::new(1.5, 3.0, z), //
+            Vector3::new(2.5, 3.0, z), //
         ];
 
         if self.game.gk_catches >= 10 {
@@ -3045,6 +3057,14 @@ impl HQMServer {
                 Vector3::new(2.0, 1.0, z),
                 Vector3::new(2.0, 2.0, z),
                 Vector3::new(1.0, 2.0, z),
+                Vector3::new(0.0, 0.5, z), //
+                Vector3::new(0.0, 1.5, z), //
+                Vector3::new(2.0, 0.5, z), //
+                Vector3::new(2.0, 1.5, z), //
+                Vector3::new(0.5, 0.0, z), //
+                Vector3::new(1.5, 0.0, z), //
+                Vector3::new(0.5, 2.0, z), //
+                Vector3::new(1.5, 2.0, z), //
             ];
         }
 
