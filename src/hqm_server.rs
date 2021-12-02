@@ -2989,16 +2989,20 @@ impl HQMServer {
         let mut result = 0;
 
         if self.game.gk_catches >= 10 {
-            if puck.body.pos.x > self.game.lastx && puck.body.pos.y < self.game.lastx + 1.0 {
-                if puck.body.pos.y > self.game.lasty && puck.body.pos.y < self.game.lasty + 1.0 {
+            if puck.body.pos.x > self.game.lastx - 0.2 && puck.body.pos.y < self.game.lastx + 1.2 {
+                if puck.body.pos.y > self.game.lasty - 0.2
+                    && puck.body.pos.y < self.game.lasty + 1.2
+                {
                     if puck.body.pos.z < 10.1 && puck.body.pos.z > 9.9 {
                         result = 1;
                     }
                 }
             }
         } else {
-            if puck.body.pos.x > self.game.lastx && puck.body.pos.y < self.game.lastx + 2.0 {
-                if puck.body.pos.y > self.game.lasty && puck.body.pos.y < self.game.lasty + 2.0 {
+            if puck.body.pos.x > self.game.lastx - 0.2 && puck.body.pos.y < self.game.lastx + 2.2 {
+                if puck.body.pos.y > self.game.lasty - 0.2
+                    && puck.body.pos.y < self.game.lasty + 2.2
+                {
                     if puck.body.pos.z < 10.1 && puck.body.pos.z > 9.9 {
                         result = 1;
                     }
