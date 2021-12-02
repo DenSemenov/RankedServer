@@ -2094,10 +2094,10 @@ impl HQMServer {
                                 "Vote for next mini game /v # or /vote #",
                             ));
                             self.add_server_chat_message(String::from(
-                                "1.Shoots  2.Goal defender  3.Air goals",
+                                "1.Speed shots  2.Goalkeeper  3.Air goals",
                             ));
                             self.add_server_chat_message(String::from(
-                                "4.Air puck  5.Scorer  6.Precision game",
+                                "4.Air puck  5.Scorer  6.Precision",
                             ));
                             self.game.time_break = 1300;
                             self.game.force_intermission = true;
