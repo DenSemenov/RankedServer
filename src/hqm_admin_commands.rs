@@ -1400,11 +1400,11 @@ impl HQMServer {
                     match game {
                         1 => {
                             self.game.voted1.push(player_index);
-                            voted_game = String::from("Shoots");
+                            voted_game = String::from("Speed shots");
                         }
                         2 => {
                             self.game.voted2.push(player_index);
-                            voted_game = String::from("Goal defender");
+                            voted_game = String::from("Goalkeeper");
                         }
                         3 => {
                             self.game.voted3.push(player_index);
@@ -1420,7 +1420,7 @@ impl HQMServer {
                         }
                         6 => {
                             self.game.voted6.push(player_index);
-                            voted_game = String::from("Precision game");
+                            voted_game = String::from("Precision");
                         }
                         _ => {}
                     }
@@ -1671,39 +1671,39 @@ impl HQMServer {
             0 => {
                 self.game.mini_game_warmup = 500;
                 let best = Self::get_mini_game_best_result();
-                mini_game_name = format!("Shoots - best result by {}", best);
-                mini_game_description = String::from("Score 8 goals in less time");
+                mini_game_name = format!("Speed shots ({})", best);
+                mini_game_description = String::from("Score 8 goals in as less time as possible");
             }
             1 => {
                 self.game.mini_game_warmup = 500;
                 let best = Self::get_gk_mini_game_best_result();
-                mini_game_name = format!("Goal defender - best result by {}", best);
-                mini_game_description = String::from("Catch more pucks");
+                mini_game_name = format!("Goalkeeper ({})", best);
+                mini_game_description = String::from("Save the most pucks");
             }
             2 => {
                 self.game.mini_game_warmup = 500;
                 let best = Self::get_catch_mini_game_best_result();
-                mini_game_name = format!("Air goals - best result by {}", best);
+                mini_game_name = format!("Air goals ({})", best);
                 mini_game_description = String::from("Score more air goals");
             }
             3 => {
                 self.game.mini_game_warmup = 500;
                 let best = Self::get_air_mini_game_best_result();
-                mini_game_name = format!("Air puck - best result by {}", best);
-                mini_game_description = String::from("Don't let the puck fall more time");
+                mini_game_name = format!("Air puck ({})", best);
+                mini_game_description =
+                    String::from("Keep the puck in the air for as long as possible");
             }
             4 => {
                 self.game.mini_game_warmup = 500;
                 let best = Self::get_scorer_mini_game_best_result();
-                mini_game_name = format!("Scorer - best result by {}", best);
-                mini_game_description = String::from("Score more goals with pass");
+                mini_game_name = format!("Scorer ({})", best);
+                mini_game_description = String::from("Score the most goals from the passes");
             }
             5 => {
                 self.game.mini_game_warmup = 500;
                 let best = Self::get_precision_mini_game_best_result();
-                mini_game_name = format!("Precision game - best result by {}", best);
-                mini_game_description =
-                    String::from("Send more pucks to square of pucks (5s to attempt)");
+                mini_game_name = format!("Precision ({})", best);
+                mini_game_description = String::from("Shoot the pucks in the squares within 5s");
             }
             // 1 => {
             //     self.game.mini_game_warmup = 500;
