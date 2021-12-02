@@ -1424,10 +1424,10 @@ impl HQMServer {
                         }
                         _ => {}
                     }
-                    self.add_directed_server_chat_message(
-                        format!("{} voted for {}", player.player_name, voted_game),
-                        player_index,
-                    );
+                    self.add_server_chat_message(format!(
+                        "{} voted for {}",
+                        player.player_name, voted_game
+                    ));
                 } else {
                     self.add_directed_server_chat_message(
                         String::from("You can vote only one time"),
