@@ -1485,36 +1485,61 @@ impl HQMServer {
                 );
                 let str_t = &str_sql;
                 let stmt = conn.prepare(str_t).unwrap();
-
-                let mut name = String::from("");
                 let mut next = false;
+
+                let mut count: i64 = 0;
+
                 for row in stmt.query(&[]).unwrap() {
-                    let count: i64 = row.get(0);
-                    if count > 0 {
-                        let player_item = RHQMPlayer {
-                            player_i: player_index,
-                            player_name: player.player_name.to_string(),
-                            afk: false,
-                        };
-
-                        name = player.player_name.to_string();
-
-                        if (self.game.logged_players.len()) < self.game.ranked_count {
-                            self.game.logged_players.push(player_item.clone());
-                        } else {
-                            next = true;
-                            self.game.logged_players_for_next.push(player_item.clone());
-                        }
-                    }
+                    count = row.get(0);
                 }
 
-                if name.len() > 0 {
-                    self.user_logged_in(&name.to_owned(), next);
-                    if !next {
+                if count > 0 {
+                    let player_item = RHQMPlayer {
+                        player_i: player_index,
+                        player_name: player.player_name.to_string(),
+                        afk: false,
+                    };
+
+                    let str_sql_banned = format!("select checkban('{}')", player.player_name);
+
+                    info!("{}", str_sql_banned);
+
+                    let stmt_banned = conn.prepare(&str_sql_banned).unwrap();
+                    let mut banned_count: i32 = 0;
+                    for row in stmt_banned.query(&[]).unwrap() {
+                        banned_count = row.get(0);
+                    }
+
+                    if banned_count > 0 {
                         self.add_directed_server_chat_message(
-                            String::from("Type /afk if you don't want to play mini-games"),
+                            String::from("You are banned"),
                             player_index,
                         );
+                    } else {
+                        let name = player.player_name.to_string();
+
+                        let mut toomuch = false;
+
+                        if (self.game.logged_players.len()) < self.game.ranked_count {
+                            self.game.logged_players.push(player_item);
+                        } else {
+                            next = true;
+
+                            if self.game.logged_players_for_next.len() < self.game.ranked_count - 1
+                            {
+                                self.game.logged_players_for_next.push(player_item);
+                            } else {
+                                toomuch = true;
+                                self.add_directed_server_chat_message(
+                                    String::from("Too many logged in for next game players"),
+                                    player_index,
+                                );
+                            }
+                        }
+
+                        if !toomuch {
+                            self.user_logged_in(&name.to_owned(), next);
+                        }
                     }
                 } else {
                     self.add_directed_server_chat_message(
@@ -1525,7 +1550,7 @@ impl HQMServer {
             }
         } else {
             self.add_directed_server_chat_message(
-                String::from("You are logged in before"),
+                String::from("You are already logged in"),
                 player_index,
             );
         }
