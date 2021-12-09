@@ -3123,8 +3123,8 @@ impl HQMServer {
 
     pub fn check_puck_stay(&mut self, puck: &HQMPuck) -> usize {
         let mut result = 0;
-        if self.game.last_puck_point < puck.body.pos.y + 0.2
-            && self.game.last_puck_point > puck.body.pos.y - 0.2
+        if self.game.last_puck_point < puck.body.pos.y + 0.05
+            && self.game.last_puck_point > puck.body.pos.y - 0.05
         {
             result = 1;
         }
