@@ -1,0 +1,62 @@
+[2mDec 10 03:15:06.342[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:15:06.345[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:15:12.633[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:50055
+[2mDec 10 03:15:14.793[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:15:56.600[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:15:56.603[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:16:02.392[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:50058
+[2mDec 10 03:16:04.325[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:16:32.457[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:16:32.460[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:16:36.793[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:50059
+[2mDec 10 03:16:38.373[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:17:43.233[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:17:43.236[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:17:50.497[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:55003
+[2mDec 10 03:17:52.587[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:18:31.429[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:18:31.432[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:18:33.464[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:55004
+[2mDec 10 03:18:36.350[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:18:49.197[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:19:12.213[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:20:46.640[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:20:46.642[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:21:08.594[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:55067
+[2mDec 10 03:21:10.726[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:21:23.578[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:26:54.480[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:26:54.483[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:26:57.942[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:52503
+[2mDec 10 03:26:59.703[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:27:12.609[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:27:25.624[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:27:38.645[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:31:10.753[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:31:10.755[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:31:17.646[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:58030
+[2mDec 10 03:31:20.144[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:31:33.060[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:31:46.080[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:33:33.802[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:33:33.805[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:33:41.104[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:56249
+[2mDec 10 03:33:43.350[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:33:56.250[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:34:09.270[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:34:22.289[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:34:35.305[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:34:48.329[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:35:01.347[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:37:15.528[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:37:15.530[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:37:21.396[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:56251
+[2mDec 10 03:37:23.567[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:37:36.470[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:38:46.096[0m [32m INFO[0m migo_hqm_server::hqm_server: New game 1 started
+[2mDec 10 03:38:46.100[0m [32m INFO[0m migo_hqm_server::hqm_server: Server listening at address 0.0.0.0:27585
+[2mDec 10 03:38:52.124[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) joined server from address 192.168.1.2:65229
+[2mDec 10 03:38:54.394[0m [32m INFO[0m migo_hqm_server::hqm_admin_commands: select checkban('70n0ff')
+[2mDec 10 03:39:07.301[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:39:25.320[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue
+[2mDec 10 03:40:03.339[0m [32m INFO[0m migo_hqm_server::hqm_server: 70n0ff (0) has joined team Blue

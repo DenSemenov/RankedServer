@@ -1164,6 +1164,22 @@ impl HQMServer {
         conn.execute(&str_sql, &[]).unwrap();
     }
 
+    pub fn save_passes_mini_game_result(name: &String, result: String) {
+        let conn = Connection::connect(
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "insert into public.\"PassesMiniGame\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"PassesMiniGame\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
+            name,
+            result
+        );
+
+        conn.execute(&str_sql, &[]).unwrap();
+    }
+
     pub(crate) fn afk(&mut self, player_index: usize) {
         let mut exist = false;
         let mut index = 0;
@@ -1345,6 +1361,28 @@ impl HQMServer {
         return player;
     }
 
+    pub fn get_passes_mini_game_best_result() -> String {
+        let conn = Connection::connect(
+            "postgresql://test:test@85.143.174.177:5432/rhqm",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        let str_sql = format!(
+            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"PassesMiniGame\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+        );
+
+        let mut player = String::from("");
+
+        let str_t = &str_sql;
+        let stmt = conn.prepare(str_t).unwrap();
+        for row in stmt.query(&[]).unwrap() {
+            player = row.get(0);
+        }
+
+        return player;
+    }
+
     pub(crate) fn vote(&mut self, player_index: usize, game: usize) {
         let mut logged = false;
         if let Some(player) = &self.players[player_index] {
@@ -1395,6 +1433,12 @@ impl HQMServer {
                     }
                 }
 
+                for vote in self.game.voted7.iter() {
+                    if vote == &player_index {
+                        count += 1;
+                    }
+                }
+
                 if count == 0 {
                     let mut voted_game = String::from("");
                     match game {
@@ -1421,6 +1465,10 @@ impl HQMServer {
                         6 => {
                             self.game.voted6.push(player_index);
                             voted_game = String::from("Precision");
+                        }
+                        7 => {
+                            self.game.voted7.push(player_index);
+                            voted_game = String::from("Passes");
                         }
                         _ => {}
                     }
@@ -1646,6 +1694,7 @@ impl HQMServer {
             3 => {}
             4 => {}
             5 => {}
+            6 => {}
             _ => {}
         }
     }
@@ -1682,6 +1731,11 @@ impl HQMServer {
         if self.game.voted6.len() > max_votes {
             max_votes_game = 5;
             max_votes = self.game.voted6.len();
+        }
+
+        if self.game.voted7.len() > max_votes {
+            max_votes_game = 6;
+            max_votes = self.game.voted7.len();
         }
 
         if max_votes == 0 {
@@ -1729,6 +1783,12 @@ impl HQMServer {
                 let best = Self::get_precision_mini_game_best_result();
                 mini_game_name = format!("Precision ({})", best);
                 mini_game_description = String::from("Shoot the pucks in the squares within 5s");
+            }
+            6 => {
+                self.game.mini_game_warmup = 500;
+                let best = Self::get_passes_mini_game_best_result();
+                mini_game_name = format!("Passes ({})", best);
+                mini_game_description = String::from("Pass the pucks in the squares within 5s");
             }
             // 1 => {
             //     self.game.mini_game_warmup = 500;

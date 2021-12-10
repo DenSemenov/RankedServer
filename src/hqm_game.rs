@@ -199,6 +199,7 @@ pub(crate) struct HQMGame {
 
     pub(crate) lastx: f32,
     pub(crate) lasty: f32,
+    pub(crate) lastz: f32,
     pub(crate) sent: bool,
 
     pub(crate) voted1: Vec<usize>,
@@ -207,6 +208,7 @@ pub(crate) struct HQMGame {
     pub(crate) voted4: Vec<usize>,
     pub(crate) voted5: Vec<usize>,
     pub(crate) voted6: Vec<usize>,
+    pub(crate) voted7: Vec<usize>,
 }
 
 impl HQMGame {
@@ -302,6 +304,7 @@ impl HQMGame {
             last_puck_point: 0.0,
             lastx: 0.0,
             lasty: 0.0,
+            lastz: 0.0,
             sent: true,
             voted1: vec![],
             voted2: vec![],
@@ -309,6 +312,7 @@ impl HQMGame {
             voted4: vec![],
             voted5: vec![],
             voted6: vec![],
+            voted7: vec![],
         }
     }
 
