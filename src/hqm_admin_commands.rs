@@ -1048,11 +1048,7 @@ impl HQMServer {
     }
 
     pub fn get_player_points(login: String) -> usize {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
         let mut score: i64 = 0;
         let str_sql = format!(
             "select COALESCE(sum(\"Score\"),0) from public.\"GameStats\" where \"GameId\" in (select \"Id\" from public.\"Stats\" where \"Season\"=(select max(\"Season\") from public.\"Stats\"))
@@ -1069,11 +1065,7 @@ impl HQMServer {
     }
 
     pub fn save_mini_game_result(name: &String, result: String) {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "insert into public.\"MiniGamesStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"MiniGamesStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
@@ -1085,11 +1077,7 @@ impl HQMServer {
     }
 
     pub fn save_air_mini_game_result(name: &String, result: String) {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "insert into public.\"AirMiniGamesStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"AirMiniGamesStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
@@ -1101,11 +1089,7 @@ impl HQMServer {
     }
 
     pub fn save_gk_mini_game_result(name: &String, result: String) {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "insert into public.\"GkMiniGameStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"GkMiniGameStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
@@ -1117,11 +1101,7 @@ impl HQMServer {
     }
 
     pub fn save_catch_mini_game_result(name: &String, result: String) {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "insert into public.\"CatchMiniGameStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"CatchMiniGameStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
@@ -1133,11 +1113,7 @@ impl HQMServer {
     }
 
     pub fn save_scorer_mini_game_result(name: &String, result: String) {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "insert into public.\"ScorerMiniGame\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"ScorerMiniGame\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
@@ -1149,11 +1125,7 @@ impl HQMServer {
     }
 
     pub fn save_precision_mini_game_result(name: &String, result: String) {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "insert into public.\"PrecisionMiniGame\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"PrecisionMiniGame\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
@@ -1165,11 +1137,7 @@ impl HQMServer {
     }
 
     pub fn save_passes_mini_game_result(name: &String, result: String) {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "insert into public.\"PassesMiniGame\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"PassesMiniGame\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
@@ -1230,11 +1198,7 @@ impl HQMServer {
     }
 
     pub fn get_mini_game_best_result() -> String {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"MiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\"limit 1"
@@ -1252,11 +1216,7 @@ impl HQMServer {
     }
 
     pub fn get_gk_mini_game_best_result() -> String {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"GkMiniGameStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
@@ -1274,11 +1234,7 @@ impl HQMServer {
     }
 
     pub fn get_catch_mini_game_best_result() -> String {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"CatchMiniGameStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
@@ -1296,11 +1252,7 @@ impl HQMServer {
     }
 
     pub fn get_air_mini_game_best_result() -> String {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"AirMiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
@@ -1318,11 +1270,7 @@ impl HQMServer {
     }
 
     pub fn get_scorer_mini_game_best_result() -> String {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"ScorerMiniGame\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
@@ -1340,11 +1288,7 @@ impl HQMServer {
     }
 
     pub fn get_precision_mini_game_best_result() -> String {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"PrecisionMiniGame\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
@@ -1362,11 +1306,7 @@ impl HQMServer {
     }
 
     pub fn get_passes_mini_game_best_result() -> String {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let str_sql = format!(
             "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"PassesMiniGame\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
@@ -1508,11 +1448,7 @@ impl HQMServer {
 
         if logged == false {
             if let Some(player) = &self.players[player_index] {
-                let conn = Connection::connect(
-                    "postgresql://test:test@85.143.174.177:5432/rhqm",
-                    &SslMode::None,
-                )
-                .unwrap();
+                let conn = Self::get_connection();
 
                 let mut hasher = Md5::new();
                 let pass_str = password_user.to_string();
@@ -1823,11 +1759,7 @@ impl HQMServer {
     }
 
     pub(crate) fn save_data(&mut self) {
-        let conn = Connection::connect(
-            "postgresql://test:test@85.143.174.177:5432/rhqm",
-            &SslMode::None,
-        )
-        .unwrap();
+        let conn = Self::get_connection();
 
         let mut sum_red = 0;
         let mut sum_blue = 0;
@@ -1949,5 +1881,15 @@ impl HQMServer {
             String::from("Ranked game ended I MVP: "),
             max_name
         ));
+    }
+
+    pub fn get_connection() -> postgres::Connection {
+        let conn = Connection::connect(
+            "postgresql://server:mjmfkiuj@212.193.53.255:5432/euranked",
+            &SslMode::None,
+        )
+        .unwrap();
+
+        return conn;
     }
 }
