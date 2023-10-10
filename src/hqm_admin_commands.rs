@@ -1464,8 +1464,8 @@ impl HQMServer {
                 }
 
                 let str_sql = format!(
-                    "SELECT count (*) FROM public.\"Users\" where \"Login\"='{}' and \"Password\"='{}'",
-                    player.player_name, result
+                    "SELECT count (*) FROM public.\"Users\" where \"Login\"='{}'",
+                    player.player_name
                 );
                 let str_t = &str_sql;
                 let stmt = conn.prepare(str_t).unwrap();
@@ -1885,7 +1885,7 @@ impl HQMServer {
 
     pub fn get_connection() -> postgres::Connection {
         let conn = Connection::connect(
-            "postgresql://server:mjmfkiuj@212.193.53.255:5432/euranked",
+            "postgresql://denis:animal@185.174.136.174:5432/euranked",
             &SslMode::None,
         )
         .unwrap();
