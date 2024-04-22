@@ -1721,7 +1721,7 @@ impl HQMServer {
 
     pub fn get_connection() -> postgres::Connection {
         let conn = Connection::connect(
-            "postgresql://denis:UM5AJa3kp8@79.137.195.224:5432/minigames",
+            "postgresql://denis:UM5AJa3kp8@85.192.56.59:5432/minigames",
             &SslMode::None,
         )
         .unwrap();
