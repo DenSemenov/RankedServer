@@ -273,21 +273,6 @@ impl HQMServer {
         }
     }
 
-    pub(crate) fn test() {
-        let mut hasher = Md5::new();
-        let pass_str = String::from("TestingBigPassword1");
-
-        let bytes = pass_str.as_bytes();
-        hasher.input(bytes);
-        let mut output = [0; 16];
-        hasher.result(&mut output);
-        let mut result: String = "".to_string();
-        for i in output.to_vec().iter() {
-            let t = format!("{:X}", i);
-            result = format!("{}{}", result, t);
-        }
-    }
-
     pub(crate) fn kick_all_matching(
         &mut self,
         admin_player_index: usize,
@@ -1068,9 +1053,9 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "insert into public.\"MiniGamesStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"MiniGamesStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
-            name,
-            result
+            "INSERT INTO public.\"Results\"(\"GameType\", \"Date\", \"Value\", \"UserId\")VALUES (1, now(), {}, (SELECT \"Id\" FROM public.\"Users\" WHERE \"Login\"='{}'));",
+            result,
+            name
         );
 
         conn.execute(&str_sql, &[]).unwrap();
@@ -1080,9 +1065,9 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "insert into public.\"AirMiniGamesStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"AirMiniGamesStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
-            name,
-            result
+            "INSERT INTO public.\"Results\"(\"GameType\", \"Date\", \"Value\", \"UserId\")VALUES (4, now(), {}, (SELECT \"Id\" FROM public.\"Users\" WHERE \"Login\"='{}'));",
+            result,
+            name
         );
 
         conn.execute(&str_sql, &[]).unwrap();
@@ -1091,10 +1076,10 @@ impl HQMServer {
     pub fn save_gk_mini_game_result(name: &String, result: String) {
         let conn = Self::get_connection();
 
-        let str_sql = format!(
-            "insert into public.\"GkMiniGameStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"GkMiniGameStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
-            name,
-            result
+       let str_sql = format!(
+            "INSERT INTO public.\"Results\"(\"GameType\", \"Date\", \"Value\", \"UserId\")VALUES (2, now(), {}, (SELECT \"Id\" FROM public.\"Users\" WHERE \"Login\"='{}'));",
+            result,
+            name
         );
 
         conn.execute(&str_sql, &[]).unwrap();
@@ -1103,10 +1088,10 @@ impl HQMServer {
     pub fn save_catch_mini_game_result(name: &String, result: String) {
         let conn = Self::get_connection();
 
-        let str_sql = format!(
-            "insert into public.\"CatchMiniGameStats\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"CatchMiniGameStats\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
-            name,
-            result
+       let str_sql = format!(
+            "INSERT INTO public.\"Results\"(\"GameType\", \"Date\", \"Value\", \"UserId\")VALUES (3, now(), {}, (SELECT \"Id\" FROM public.\"Users\" WHERE \"Login\"='{}'));",
+            result,
+            name
         );
 
         conn.execute(&str_sql, &[]).unwrap();
@@ -1116,9 +1101,9 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "insert into public.\"ScorerMiniGame\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"ScorerMiniGame\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
-            name,
-            result
+            "INSERT INTO public.\"Results\"(\"GameType\", \"Date\", \"Value\", \"UserId\")VALUES (5, now(), {}, (SELECT \"Id\" FROM public.\"Users\" WHERE \"Login\"='{}'));",
+            result,
+            name
         );
 
         conn.execute(&str_sql, &[]).unwrap();
@@ -1127,10 +1112,10 @@ impl HQMServer {
     pub fn save_precision_mini_game_result(name: &String, result: String) {
         let conn = Self::get_connection();
 
-        let str_sql = format!(
-            "insert into public.\"PrecisionMiniGame\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"PrecisionMiniGame\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
-            name,
-            result
+       let str_sql = format!(
+            "INSERT INTO public.\"Results\"(\"GameType\", \"Date\", \"Value\", \"UserId\")VALUES (6, now(), {}, (SELECT \"Id\" FROM public.\"Users\" WHERE \"Login\"='{}'));",
+            result,
+            name
         );
 
         conn.execute(&str_sql, &[]).unwrap();
@@ -1139,10 +1124,10 @@ impl HQMServer {
     pub fn save_passes_mini_game_result(name: &String, result: String) {
         let conn = Self::get_connection();
 
-        let str_sql = format!(
-            "insert into public.\"PassesMiniGame\" values((select CASE WHEN max(\"Id\") IS NULL THEN 1 ELSE max(\"Id\")+1 END from public.\"PassesMiniGame\"),(select \"Id\" from public.\"Users\" where \"Login\"='{}'),NOW(), {})",
-            name,
-            result
+         let str_sql = format!(
+            "INSERT INTO public.\"Results\"(\"GameType\", \"Date\", \"Value\", \"UserId\")VALUES (7, now(), {}, (SELECT \"Id\" FROM public.\"Users\" WHERE \"Login\"='{}'));",
+            result,
+            name
         );
 
         conn.execute(&str_sql, &[]).unwrap();
@@ -1201,7 +1186,7 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"MiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\"limit 1"
+            "select CONCAT(u.\"Login\",' (', r.\"Value\", ')') from public.\"Results\" r, public.\"Users\" u where u.\"Id\" = r.\"UserId\" and \"GameType\"=1 order by r.\"Value\" limit 1"
         );
 
         let mut player = String::from("");
@@ -1219,7 +1204,7 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"GkMiniGameStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+            "select CONCAT(u.\"Login\",' (', r.\"Value\", ')') from public.\"Results\" r, public.\"Users\" u where u.\"Id\" = r.\"UserId\" and \"GameType\"=2 order by r.\"Value\" desc limit 1"
         );
 
         let mut player = String::from("");
@@ -1237,7 +1222,7 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"CatchMiniGameStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+            "select CONCAT(u.\"Login\",' (', r.\"Value\", ')') from public.\"Results\" r, public.\"Users\" u where u.\"Id\" = r.\"UserId\" and \"GameType\"=3 order by r.\"Value\" desc limit 1"
         );
 
         let mut player = String::from("");
@@ -1255,7 +1240,7 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"AirMiniGamesStats\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+            "select CONCAT(u.\"Login\",' (', r.\"Value\", ')') from public.\"Results\" r, public.\"Users\" u where u.\"Id\" = r.\"UserId\" and \"GameType\"=4 order by r.\"Value\" desc limit 1"
         );
 
         let mut player = String::from("");
@@ -1273,7 +1258,7 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"ScorerMiniGame\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+            "select CONCAT(u.\"Login\",' (', r.\"Value\", ')') from public.\"Results\" r, public.\"Users\" u where u.\"Id\" = r.\"UserId\" and \"GameType\"=5 order by r.\"Value\" desc limit 1"
         );
 
         let mut player = String::from("");
@@ -1291,7 +1276,7 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"PrecisionMiniGame\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+            "select CONCAT(u.\"Login\",' (', r.\"Value\", ')') from public.\"Results\" r, public.\"Users\" u where u.\"Id\" = r.\"UserId\" and \"GameType\"=6 order by r.\"Value\" desc limit 1"
         );
 
         let mut player = String::from("");
@@ -1309,7 +1294,7 @@ impl HQMServer {
         let conn = Self::get_connection();
 
         let str_sql = format!(
-            "SELECT CONCAT(u.\"Login\",' (', m.\"Value\", ')') FROM public.\"PassesMiniGame\" m, public.\"Users\" u where m.\"Player\" = u.\"Id\" order by m.\"Value\" desc limit 1"
+            "select CONCAT(u.\"Login\",' (', r.\"Value\", ')') from public.\"Results\" r, public.\"Users\" u where u.\"Id\" = r.\"UserId\" and \"GameType\"=7 order by r.\"Value\" desc limit 1"
         );
 
         let mut player = String::from("");
@@ -1464,8 +1449,8 @@ impl HQMServer {
                 }
 
                 let str_sql = format!(
-                    "SELECT count (*) FROM public.\"Users\" where \"Login\"='{}'",
-                    player.player_name
+                    "INSERT INTO public.\"Users\" (\"Login\") SELECT '{}' WHERE NOT EXISTS (SELECT \"Id\" FROM public.\"Users\" WHERE \"Login\" = '{}');",
+                    player.player_name, player.player_name
                 );
                 let str_t = &str_sql;
                 let stmt = conn.prepare(str_t).unwrap();
@@ -1477,30 +1462,13 @@ impl HQMServer {
                     count = row.get(0);
                 }
 
-                if count > 0 {
-                    let player_item = RHQMPlayer {
+                let player_item = RHQMPlayer {
                         player_i: player_index,
                         player_name: player.player_name.to_string(),
                         afk: false,
                     };
 
-                    let str_sql_banned = format!("select checkban('{}')", player.player_name);
-
-                    info!("{}", str_sql_banned);
-
-                    let stmt_banned = conn.prepare(&str_sql_banned).unwrap();
-                    let mut banned_count: i32 = 0;
-                    for row in stmt_banned.query(&[]).unwrap() {
-                        banned_count = row.get(0);
-                    }
-
-                    if banned_count > 0 {
-                        self.add_directed_server_chat_message(
-                            String::from("You are banned"),
-                            player_index,
-                        );
-                    } else {
-                        let name = player.player_name.to_string();
+                   let name = player.player_name.to_string();
 
                         let mut toomuch = false;
 
@@ -1524,13 +1492,6 @@ impl HQMServer {
                         if !toomuch {
                             self.user_logged_in(&name.to_owned(), next);
                         }
-                    }
-                } else {
-                    self.add_directed_server_chat_message(
-                        String::from("Wrong password"),
-                        player_index,
-                    );
-                }
             }
         } else {
             self.add_directed_server_chat_message(
@@ -1758,134 +1719,9 @@ impl HQMServer {
         }
     }
 
-    pub(crate) fn save_data(&mut self) {
-        let conn = Self::get_connection();
-
-        let mut sum_red = 0;
-        let mut sum_blue = 0;
-
-        for i in self.game.game_players.iter() {
-            if i.player_team == 0 {
-                sum_red += i.player_points;
-            } else {
-                sum_blue += i.player_points;
-            }
-        }
-
-        let avg_red = sum_red / (self.game.ranked_count / 2);
-        let avg_blue = sum_blue / (self.game.ranked_count / 2);
-
-        let max = 30;
-        let min = 5;
-
-        let mut max_points = 0;
-        let mut max_name = String::from("");
-
-        for i in self.game.game_players.iter() {
-            match i {
-                RHQMGamePlayer {
-                    player_i_r: _,
-                    player_name_r,
-                    player_points,
-                    player_team,
-                    goals,
-                    assists,
-                    leaved_seconds,
-                } => {
-                    let mut win_div = 10;
-                    let mut lose_div = 10;
-
-                    if player_team == &0 {
-                        let mut val =
-                            isize::abs(player_points.to_owned() as isize - avg_red as isize);
-
-                        if player_points.to_owned() as isize - max as isize > avg_red as isize {
-                            val = max as isize;
-                        }
-
-                        if (player_points.to_owned() as isize + max as isize) < avg_red as isize {
-                            val = max as isize;
-                        }
-
-                        win_div = max - val;
-                        lose_div = val;
-                    } else {
-                        let mut val =
-                            isize::abs(player_points.to_owned() as isize - avg_blue as isize);
-                        if player_points.to_owned() as isize - max as isize > avg_blue as isize {
-                            val = max as isize;
-                        }
-
-                        if (player_points.to_owned() as isize + max as isize) < avg_blue as isize {
-                            val = min as isize;
-                        }
-                        win_div = max - val;
-                        lose_div = val;
-                    }
-
-                    let mut points = 0;
-
-                    if player_team == &0 {
-                        if self.game.red_score > self.game.blue_score {
-                            points = win_div as isize + self.game.red_score as isize
-                                - self.game.blue_score as isize;
-                        } else {
-                            points = -1 as isize * lose_div as isize - self.game.blue_score as isize
-                                + self.game.red_score as isize
-                        }
-                    } else {
-                        if self.game.blue_score > self.game.red_score {
-                            points = win_div as isize + self.game.blue_score as isize
-                                - self.game.red_score as isize;
-                        } else {
-                            points = -1 as isize * lose_div as isize - self.game.red_score as isize
-                                + self.game.blue_score as isize
-                        }
-                    }
-
-                    if goals + assists >= max_points {
-                        max_name = player_name_r.to_owned();
-                        max_points = goals + assists;
-                    }
-
-                    let mut leaved = false;
-                    if leaved_seconds == &0 {
-                        leaved = true;
-                        points = -30;
-                    }
-
-                    let str_sql_player = format!(
-                        "insert into public.\"GameStats\" values((select max(\"Id\")+1 from public.\"GameStats\"), (select max(\"Id\")+1 from public.\"Stats\"), (select \"Id\" from public.\"Users\" where \"Login\"='{}'), {}, {}, {}, {}, {} )",
-                        player_name_r,
-                        player_team,
-                        goals,
-                        assists,
-                        points,
-                        leaved
-                    );
-                    conn.execute(&str_sql_player, &[]).unwrap();
-                }
-            }
-        }
-
-        let str_sql = format!(
-            "insert into public.\"Stats\" values((select max(\"Id\")+1 from public.\"Stats\"), (select max(\"Season\") from public.\"Stats\"), {},{},NOW(), (select \"Id\" from public.\"Users\" where \"Login\"='{}'))",
-            self.game.red_score,
-            self.game.blue_score,
-            max_name
-        );
-        conn.execute(&str_sql, &[]).unwrap();
-
-        self.add_server_chat_message(format!(
-            "{} {}",
-            String::from("Ranked game ended I MVP: "),
-            max_name
-        ));
-    }
-
     pub fn get_connection() -> postgres::Connection {
         let conn = Connection::connect(
-            "postgresql://denis:animal@185.174.136.174:5432/euranked",
+            "postgresql://denis:UM5AJa3kp8@79.137.195.224:5432/minigames",
             &SslMode::None,
         )
         .unwrap();
